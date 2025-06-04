@@ -14,18 +14,30 @@ class UserService
         return User::all();
     }
 
-    public function store(UserDTO $dto)
+    public function store(UserDTO $dto): User
     {
-        return User::create([
-            'name' => $dto->name,
-            'document_type_id' => $dto->document_type_id,
-            'document' => $dto->document,
-            'role_id' => $dto->role_id,
-            'email' => $dto->email,
-            'phone' => $dto->phone,
-            'status_id' => $dto->status_id,
-            'password' => Hash::make('password'), // Password temporal
-        ]);
+        try {
+            
+            $hashedPassword = Hash::make($dto->password);
+
+            $user = User::create([
+                'name' => $dto->name,
+                'document_type_id' => $dto->document_type_id,
+                'document' => $dto->document,
+                'role_id' => $dto->role_id,
+                'email' => $dto->email,
+                'phone' => $dto->phone,
+                'status_id' => $dto->status_id,
+                'password' => $hashedPassword, 
+            ]);
+
+            return $user;
+
+        } catch (\Illuminate\Database\QueryException $e) {
+            throw new \Exception('Error de base de datos al crear el usuario: ' . $e->getMessage(), 0, $e);
+        } catch (\Exception $e) {
+            throw new \Exception('Ocurrió un error inesperado al crear el usuario: ' . $e->getMessage(), 0, $e);
+        }
     }
 
     public function update(EditUserDTO $dto): User
@@ -44,8 +56,14 @@ class UserService
         return $user;
     }
 
-    public function destroy(User $user)
+    public function destroy(User $user): bool
     {
-        $user->delete();
+        try {
+            return $user->delete();
+        } catch (\Illuminate\Database\QueryException $e) {
+            throw new \Exception('Error de base de datos al eliminar el usuario: ' . $e->getMessage(), 0, $e);
+        } catch (\Exception $e) {
+            throw new \Exception('Ocurrió un error inesperado al eliminar el usuario: ' . $e->getMessage(), 0, $e);
+        }
     }
 }

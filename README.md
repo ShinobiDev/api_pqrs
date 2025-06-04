@@ -1,6 +1,3 @@
-# api_pqrs
-Esta API RESTful permite la gestión integral de Peticiones, Quejas, Reclamos y Sugerencias (PQRS) entre una empresa y sus clientes. Facilita la creación, seguimiento, actualización y consulta de cada caso, optimizando la comunicación y mejorando la satisfacción del cliente.
-
 # API RESTful de Gestión de PQRS
 
 Esta es una API RESTful desarrollada en Laravel para la gestión de Peticiones, Quejas, Reclamos y Sugerencias (PQRS). Permite a los usuarios y administradores interactuar con los diferentes módulos del sistema para crear, consultar, actualizar y eliminar PQRS, así como gestionar roles, estados, tipos de documento y respuestas.

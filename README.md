@@ -228,3 +228,11 @@ Ejemplo de respuesta de error de validación (`422`):
         ]
     }
 }
+```
+Ejemplo de respuesta de error general (`500`):
+
+```json
+{
+    "message": "Ocurrió un error al intentar crear el usuario.",
+    "error": "SQLSTATE[42P01]: Undefined table: 7 ERROR: relation \"document_types\" does not exist"
+}

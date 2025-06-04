@@ -6,7 +6,9 @@ use Illuminate\Http\Request;
 
 use App\Models\Role;
 use App\DTOs\Roles\RoleDTO;
+use App\DTOs\Roles\EditRoleDTO;
 use App\Services\RoleService;
+use Illuminate\Validation\Rule;
 use App\Http\Controllers\Controller;
 
 class RoleController extends Controller
@@ -36,13 +38,39 @@ class RoleController extends Controller
 
     public function update(Request $request, Role $role)
     {
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
+        $roleId = $role->id;
+
+        $validatedData = $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:30',
+                Rule::unique('roles')->ignore($roleId, 'id'), 
+            ],
         ]);
 
-        $dto = RoleDTO::fromArray($data);
+        try {
+            // Crear el DTO DE EDICIÓN, pasándole el ID y el nombre
+            $editRoleDTO = new EditRoleDTO($roleId, $validatedData['name']);
 
-        return response()->json($this->service->update($role, $dto));
+            // Llamar al servicio, que ahora esperará un EditRoleDTO
+            $updatedRole = $this->service->update($editRoleDTO);
+
+            return response()->json([
+                'message' => 'Rol actualizado exitosamente.',
+                'status' => $updatedRole->toArray()
+            ], 200);
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'Rol no encontrado.'
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al actualizar el rol.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function destroy(Role $role)

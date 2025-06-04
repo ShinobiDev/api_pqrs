@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Http\Controllers\Controller;
-use App\Services\TypeService;
-use App\DTOs\types\TypeDTO;
 use App\Models\Type;
+
+use App\DTOs\types\TypeDTO;
+use App\DTOs\types\EditTypeDTO;
+
+use App\Services\TypeService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use App\Http\Controllers\Controller;
 
 class TypeController extends Controller
 {
@@ -36,14 +40,39 @@ class TypeController extends Controller
 
     public function update(Request $request, Type $type)
     {
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'parent_type_id' => 'nullable|integer|exists:types,id',
+        $typeId = $type->id;
+
+        $validatedData = $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:30',
+                Rule::unique('types')->ignore($typeId, 'id'), 
+            ],
         ]);
 
-        $dto = TypeDTO::fromArray($data);
+        try {
+            // Crear el DTO DE EDICIÓN, pasándole el ID y el nombre
+            $editTypeDTO = new EditTypeDTO($typeId, $validatedData['name']);
 
-        return response()->json($this->service->update($type, $dto));
+            // Llamar al servicio, que ahora esperará un EditTypeDTO
+            $updatedType = $this->service->update($editTypeDTO);
+
+            return response()->json([
+                'message' => 'Tipo actualizado exitosamente.',
+                'status' => $updatedType->toArray()
+            ], 200);
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'Tipo no encontrado.'
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al actualizar el tipo.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function destroy(Type $type)

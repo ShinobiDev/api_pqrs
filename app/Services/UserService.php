@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\User;
 use App\DTOs\Users\UserDTO;
+use App\DTOs\Users\EditUserDTO;
 use Illuminate\Support\Facades\Hash;
 
 class UserService
@@ -27,8 +28,9 @@ class UserService
         ]);
     }
 
-    public function update(User $user, UserDTO $dto)
+    public function update(EditUserDTO $dto): User
     {
+        $user = User::findOrFail($dto->id); // Ahora $dto->id existirá
         $user->update([
             'name' => $dto->name,
             'document_type_id' => $dto->document_type_id,

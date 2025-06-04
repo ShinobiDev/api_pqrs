@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Type;
 use App\DTOs\Types\TypeDTO;
+use App\DTOs\Types\EditTypeDTO;
 
 class TypeService
 {
@@ -20,12 +21,10 @@ class TypeService
         ]);
     }
 
-    public function update(Type $type, TypeDTO $dto): Type
+    public function update(EditTypeDTO $dto): Type // <--- ¡Cambia el tipo aquí!
     {
-        $type->update([
-            'name' => $dto->name,
-            'parent_type_id' => $dto->parent_type_id,
-        ]);
+        $type = Type::findOrFail($dto->id); // Ahora $dto->id existirá
+        $type->update(['name' => $dto->name]);
         return $type;
     }
 

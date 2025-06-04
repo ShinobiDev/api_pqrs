@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Role;
 use App\DTOs\Roles\RoleDTO;
+use App\DTOs\Roles\EditRoleDTO;
 
 class RoleService
 {
@@ -17,8 +18,9 @@ class RoleService
         return Role::create(['name' => $dto->name]);
     }
 
-    public function update(Role $role, RoleDTO $dto): Role
+    public function update(EditRoleDTO $dto): Role // <--- ¡Cambia el tipo aquí!
     {
+        $role = Role::findOrFail($dto->id); // Ahora $dto->id existirá
         $role->update(['name' => $dto->name]);
         return $role;
     }

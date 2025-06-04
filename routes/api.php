@@ -24,7 +24,10 @@ use App\Http\Controllers\API\StatusController;
 Route::get('statuses', [StatusController::class, 'index']);         
 Route::post('statuses', [StatusController::class, 'store']);        
 Route::put('statuses/{status}', [StatusController::class, 'update']); 
-Route::delete('statuses/{status}', [StatusController::class, 'destroy']); 
+Route::delete('statuses/{status}', [StatusController::class, 'destroy']);
+
+Route::post('statuses/{id}/restore', [StatusController::class, 'restore']); // Para restaurar un status (método POST para una acción)
+Route::delete('statuses/{id}/force-delete', [StatusController::class, 'forceDelete']); // Para eliminar permanentemente (DELETE con segmento específico)
 
 // ROLE
 Route::get('roles', [RoleController::class, 'index']);

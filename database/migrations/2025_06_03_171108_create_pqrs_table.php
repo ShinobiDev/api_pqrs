@@ -15,21 +15,25 @@ class CreatePqrsTable extends Migration
     {
         Schema::create('pqrs', function (Blueprint $table) {
             $table->id();
-            $table->string('guía');
+            $table->string('guia');
             $table->string('name');
-            $table->string('identification');
+            $table->string('document');
             $table->string('phone')->nullable();
             $table->string('address')->nullable();
-            $table->string('cel_phon')->nullable();
-            $table->string('destination_city');
+            $table->string('cel_phone')->nullable();
+            $table->unsignedBigInteger('destiny_city_id');
             $table->unsignedBigInteger('pqrs_type_id');
             $table->text('description');
             $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('status_id');
             $table->timestamps();
             $table->softDeletes();
 
-            $table->foreign('pqrs_type_id')->references('id')->on('types');
-            $table->foreign('user_id')->references('id')->on('users');
+            $table->foreign('pqrs_type_id')->references('id')->on('types')->onDelete('cascade');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('destiny_city_id')->references('id')->on('cities')->onDelete('cascade');
+            $table->foreign('status_id')->references('id')->on('statuses')->onDelete('cascade');
+
         });
     }
 

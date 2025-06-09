@@ -12,42 +12,67 @@ class PqrsService
         return Pqrs::all();
     }
 
-    public function store(PqrsDTO $dto)
+    /**
+     * Crea una nueva PQRS.
+     *
+     * @param PqrsDTO $dto
+     * @return Pqrs
+     * @throws \Exception
+     */
+    public function store(PqrsDTO $dto): Pqrs
     {
-        return Pqrs::create([
-            'guia' => $dto->guia,
-            'name' => $dto->name,
-            'identification' => $dto->identification,
-            'phone' => $dto->phone,
-            'address' => $dto->address,
-            'cel_phon' => $dto->cel_phon,
-            'destination_city' => $dto->destination_city,
-            'pqrs_type_id' => $dto->pqrs_type_id,
-            'description' => $dto->description,
-            'user_id' => $dto->user_id,
-        ]);
+        try {
+            $pqrs = Pqrs::create([
+                'guia' => $dto->guia,
+                'name' => $dto->name,
+                'document' => $dto->document,
+                'phone' => $dto->phone,
+                'address' => $dto->address,
+                'cel_phone' => $dto->cel_phone,
+                'destiny_city_id' => $dto->destiny_city_id,
+                'pqrs_type_id' => $dto->pqrs_type_id,
+                'description' => $dto->description,
+                'user_id' => $dto->user_id,
+                'status_id' => $dto->status_id,
+            ]);
+            return $pqrs;
+        } catch (\Exception $e) {
+            throw new \Exception('Error al crear la PQRS: ' . $e->getMessage(), 0, $e);
+        }
     }
 
-    public function update(Pqrs $pqrs, PqrsDTO $dto)
+    public function update(PqrsDTO $dto)
     {
-        $pqrs->update([
-            'guia' => $dto->guia,
-            'name' => $dto->name,
-            'identification' => $dto->identification,
-            'phone' => $dto->phone,
-            'address' => $dto->address,
-            'cel_phon' => $dto->cel_phon,
-            'destination_city' => $dto->destination_city,
-            'pqrs_type_id' => $dto->pqrs_type_id,
-            'description' => $dto->description,
-            'user_id' => $dto->user_id,
-        ]);
-
-        return $pqrs;
+        try {
+            $pqrs = Pqrs::findOrFail($dto->id);
+            $pqrs->update([
+                'guia' => $dto->guia,
+                'name' => $dto->name,
+                'document' => $dto->document,
+                'phone' => $dto->phone,
+                'address' => $dto->address,
+                'cel_phone' => $dto->cel_phone,
+                'destiny_city_id' => $dto->destiny_city_id,
+                'pqrs_type_id' => $dto->pqrs_type_id,
+                'description' => $dto->description,
+                'user_id' => $dto->user_id,
+                'status_id' => $dto->status_id,
+            ]);
+            return $pqrs;
+        } catch (ModelNotFoundException $e) {
+            throw new ModelNotFoundException('PQRS con ID ' . $dto->id . ' no encontrada.');
+        } catch (\Exception $e) {
+            throw new \Exception('Error al actualizar la PQRS: ' . $e->getMessage(), 0, $e);
+        }
     }
 
     public function destroy(Pqrs $pqrs)
     {
-        $pqrs->delete();
+        try {
+            // Asegúrate de que el modelo Pqrs use el trait SoftDeletes.
+            return $pqrs->delete();
+        } catch (\Exception $e) {
+            throw new \Exception('Error al eliminar la PQRS: ' . $e->getMessage(), 0, $e);
+        }
     }
 }

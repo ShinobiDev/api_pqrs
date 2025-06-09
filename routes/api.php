@@ -59,6 +59,18 @@ Route::post('/answers', [AnswerController::class, 'store']);
 Route::put('/answers/{answer}', [AnswerController::class, 'update']);
 Route::delete('/answers/{answer}', [AnswerController::class, 'destroy'])->withTrashed();
 
+//STATE
+Route::get('/states', [StateController::class, 'index']);
+Route::post('/states', [StateController::class, 'store']);
+Route::put('/states/{state}', [StateController::class, 'update']);
+Route::delete('/states/{state}', [StateController::class, 'destroy']);
+
+//CITY
+Route::get('/cities', [CityController::class, 'index']);
+Route::post('/cities', [CityController::class, 'store']);
+Route::put('/cities/{city}', [CityController::class, 'update']);
+Route::delete('/cities/{city}', [CityController::class, 'destroy']);
+
 // Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 //     return $request->user();
 // });

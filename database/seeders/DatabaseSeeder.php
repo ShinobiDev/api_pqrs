@@ -18,6 +18,8 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             StatusSeeder::class,
             TypeSeeder::class,
+            StateSeeder::class,
+            CitySeeder::class,
             UserSeeder::class,
             PqrsSeeder::class,
             AnswerSeeder::class

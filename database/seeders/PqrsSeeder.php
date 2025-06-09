@@ -15,16 +15,17 @@ class PqrsSeeder extends Seeder
     public function run()
     {
         Pqrs::create([
-            'guía' => 'PQRS001',
+            'guia' => 'PQRS001',
             'name' => 'Juan Pérez',
-            'identification' => '1122334455',
+            'document' => '1122334455',
             'phone' => '3001234567',
             'address' => 'Calle Falsa 123',
-            'cel_phon' => '3011234567',
-            'destination_city' => 'Bogotá',
+            'cel_phone' => '3011234567',
+            'destiny_city_id' => 1,
             'pqrs_type_id' => 2, // Ej. tipo: PQR
             'description' => 'Queja sobre el servicio',
             'user_id' => 1, // Admin
+            'status_id' => 1
         ]);
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\DTOs\Cities;
+namespace App\DTOs\Citys;
 
 class CityDTO
 {

@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Models\City;
-use App\DTOs\Cities\CityDTO;
+use App\DTOs\Citys\CityDTO;
 
 class CityService
 {

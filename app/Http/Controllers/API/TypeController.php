@@ -21,11 +21,51 @@ class TypeController extends Controller
         $this->service = $service;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/types",
+     *     summary="Get all types",
+     *     tags={"Types"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="List of types",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="name", type="string", example="Petición"),
+     *                 @OA\Property(property="parent_type_id", type="integer", nullable=true, example=null)
+     *             )
+     *         )
+     *     )
+     * )
+     */
     public function index()
     {
         return response()->json($this->service->getAll());
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/types",
+     *     summary="Create a new type",
+     *     tags={"Types"},
+     *     security={{"sanctum":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"name"},
+     *             @OA\Property(property="name", type="string", example="Queja"),
+     *             @OA\Property(property="parent_type_id", type="integer", nullable=true, example=null)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Type created successfully"
+     *     )
+     * )
+     */
     public function store(Request $request)
     {
         $data = $request->validate([

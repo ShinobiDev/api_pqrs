@@ -16,9 +16,10 @@ Esta es una API RESTful desarrollada en Laravel para la gestión de Peticiones, 
     * [User](#user)
     * [PQRS](#pqrs)
     * [Answer](#answer)
-7.  [Manejo de Errores](#manejo-de-errores)
-8.  [Contribución](#contribución)
-9.  [Licencia](#licencia)
+7.  [Documentación de la API (Swagger/OpenAPI)](#documentación-de-la-api-swaggeropenapi)
+8.  [Manejo de Errores](#manejo-de-errores)
+9.  [Contribución](#contribución)
+10. [Licencia](#licencia)
 
 ## 1. Características
 
@@ -196,7 +197,118 @@ Gestión de las respuestas a las PQRS.
 | `PUT`  | `/api/answers/{answer}`| Actualiza una respuesta existente.| `{ "answer_text": "..." }`                                                   | `{"message": "Respuesta actualizada...", "answer": {...}}` |
 | `DELETE` | `/api/answers/{answer}`| Elimina lógicamente una respuesta.| N/A                                                                          | `{"message": "Respuesta eliminada..."}` |
 
-## 7. Manejo de Errores
+## 7. Documentación de la API (Swagger/OpenAPI)
+
+### 🌐 Acceder a la documentación
+
+Una vez que el servidor esté ejecutándose, puedes acceder a la documentación interactiva de la API en:
+
+```
+http://127.0.0.1:8000/api/documentation
+```
+
+### 🔄 Generar/Actualizar la documentación
+
+Si realizas cambios en los controladores o anotaciones de Swagger, regenera la documentación con:
+
+```bash
+php artisan l5-swagger:generate
+```
+
+### 📝 Estructura de la documentación
+
+La documentación incluye todos los endpoints disponibles organizados por categorías:
+
+- **🔐 Authentication** - Login, logout, información del usuario
+- **👥 Users** - Gestión de usuarios
+- **📋 PQRS** - Gestión de peticiones, quejas, reclamos y sugerencias
+- **🏢 Roles** - Gestión de roles de usuario
+- **📍 States/Cities** - Gestión de ubicaciones geográficas
+- **📊 Status/Types** - Estados y tipos de PQRS
+- **💬 Answers** - Respuestas a PQRS
+
+### 🔑 Autenticación en Swagger
+
+1. Ejecuta el endpoint de login desde Swagger o con curl:
+   ```bash
+   curl -X POST http://127.0.0.1:8000/api/login \
+        -H "Content-Type: application/json" \
+        -d '{"email": "admin@example.com", "password": "123456789"}'
+   ```
+
+2. Copia el `access_token` de la respuesta
+3. Haz clic en el botón "Authorize" en la parte superior de Swagger
+4. Ingresa: `Bearer {tu_token_aquí}` (ejemplo: `Bearer 6|uJ6D7u9oHhT3n75BJ2dhVeivJiB4I7FuzeU4qg18`)
+5. Ahora puedes probar todos los endpoints protegidos
+
+### 🛠️ Comandos útiles para Swagger
+
+```bash
+# Generar documentación
+php artisan l5-swagger:generate
+
+# Limpiar caché de documentación
+php artisan l5-swagger:generate --clear
+
+# Verificar configuración de Swagger
+php artisan config:show l5-swagger
+```
+
+### 📁 Archivos de configuración
+
+- **Configuración**: `config/l5-swagger.php`
+- **Anotaciones base**: `app/Http/Controllers/Controller.php`
+- **Documentación generada**: `storage/api-docs/api-docs.json`
+- **Vista pública**: Accesible desde `/api/documentation`
+
+### 🔧 Personalización
+
+Para personalizar la documentación, edita las anotaciones OpenAPI en cada controlador:
+
+```php
+/**
+ * @OA\Get(
+ *     path="/api/endpoint",
+ *     summary="Descripción del endpoint",
+ *     tags={"Categoría"},
+ *     security={{"sanctum":{}}},
+ *     // ... más anotaciones
+ * )
+ */
+```
+
+### ❗ Solución de problemas comunes
+
+**Problema**: La documentación no se actualiza
+```bash
+php artisan l5-swagger:generate --clear
+php artisan config:clear
+php artisan cache:clear
+```
+
+**Problema**: Error 404 en `/api/documentation`
+- Verifica que el servidor esté ejecutándose
+- Asegúrate de que la configuración de l5-swagger esté correcta
+- Regenera la documentación
+
+**Problema**: Endpoints no aparecen en Swagger
+- Verifica que las anotaciones OpenAPI estén correctas
+- Asegúrate de que los controladores tengan el namespace correcto
+- Regenera la documentación
+
+### 📋 Formato de tokens Sanctum
+
+Los tokens de Laravel Sanctum tienen el formato: `ID|hash_aleatorio`
+
+Ejemplo: `6|uJ6D7u9oHhT3n75BJ2dhVeivJiB4I7FuzeU4qg18`
+
+- **6** = ID del token en la base de datos
+- **|** = Separador
+- **uJ6D7u9oHhT3n75BJ2dhVeivJiB4I7FuzeU4qg18** = Hash de seguridad
+
+Este formato es estándar y seguro para Laravel Sanctum.
+
+## 8. Manejo de Errores
 
 La API utiliza códigos de estado HTTP estándar y respuestas JSON para indicar el resultado de las operaciones.
 

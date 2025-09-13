@@ -16,6 +16,39 @@ class PqrsController extends Controller
         $this->service = $service;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/pqrs",
+     *     summary="Get all PQRS",
+     *     tags={"PQRS"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="List of PQRS",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="guia", type="string", example="GU123456"),
+     *                 @OA\Property(property="name", type="string", example="John Doe"),
+     *                 @OA\Property(property="document", type="string", example="123456789"),
+     *                 @OA\Property(property="phone", type="string", example="3001234567"),
+     *                 @OA\Property(property="address", type="string", example="Calle 123 #45-67"),
+     *                 @OA\Property(property="cel_phone", type="string", example="3009876543"),
+     *                 @OA\Property(property="destiny_city_id", type="integer", example=1),
+     *                 @OA\Property(property="pqrs_type_id", type="integer", example=1),
+     *                 @OA\Property(property="description", type="string", example="Descripción del PQRS"),
+     *                 @OA\Property(property="user_id", type="integer", example=1),
+     *                 @OA\Property(property="status_id", type="integer", example=1)
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error"
+     *     )
+     * )
+     */
     public function index()
     {
         try {
@@ -30,10 +63,45 @@ class PqrsController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
+     * @OA\Post(
+     *     path="/api/pqrs",
+     *     summary="Create a new PQRS",
+     *     tags={"PQRS"},
+     *     security={{"sanctum":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"guia","name","document","phone","address","cel_phone","destiny_city_id","pqrs_type_id","description","user_id","status_id"},
+     *             @OA\Property(property="guia", type="string", example="GU123456"),
+     *             @OA\Property(property="name", type="string", example="John Doe"),
+     *             @OA\Property(property="document", type="string", example="123456789"),
+     *             @OA\Property(property="phone", type="string", example="3001234567"),
+     *             @OA\Property(property="address", type="string", example="Calle 123 #45-67"),
+     *             @OA\Property(property="cel_phone", type="string", example="3009876543"),
+     *             @OA\Property(property="destiny_city_id", type="integer", example=1),
+     *             @OA\Property(property="pqrs_type_id", type="integer", example=1),
+     *             @OA\Property(property="description", type="string", example="Descripción del PQRS"),
+     *             @OA\Property(property="user_id", type="integer", example=1),
+     *             @OA\Property(property="status_id", type="integer", example=1)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="PQRS created successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="PQRS creada exitosamente."),
+     *             @OA\Property(property="pqrs", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error"
+     *     )
+     * )
      */
     public function store(Request $request)
     {
@@ -90,6 +158,53 @@ class PqrsController extends Controller
         }
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/pqrs/{id}",
+     *     summary="Update a PQRS",
+     *     tags={"PQRS"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"guia","name","document","phone","address","cel_phone","destiny_city_id","pqrs_type_id","description","user_id","status_id"},
+     *             @OA\Property(property="guia", type="string", example="GU123456"),
+     *             @OA\Property(property="name", type="string", example="John Doe"),
+     *             @OA\Property(property="document", type="string", example="123456789"),
+     *             @OA\Property(property="phone", type="string", example="3001234567"),
+     *             @OA\Property(property="address", type="string", example="Calle 123 #45-67"),
+     *             @OA\Property(property="cel_phone", type="string", example="3009876543"),
+     *             @OA\Property(property="destiny_city_id", type="integer", example=1),
+     *             @OA\Property(property="pqrs_type_id", type="integer", example=1),
+     *             @OA\Property(property="description", type="string", example="Descripción del PQRS"),
+     *             @OA\Property(property="user_id", type="integer", example=1),
+     *             @OA\Property(property="status_id", type="integer", example=1)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="PQRS updated successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="PQRS actualizada exitosamente."),
+     *             @OA\Property(property="pqrs", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="PQRS not found"
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error"
+     *     )
+     * )
+     */
     public function update(Request $request, Pqrs $pqrs)
     {
         $pqrsId = $pqrs->id;
@@ -145,6 +260,39 @@ class PqrsController extends Controller
         }
     }
 
+    /**
+     * @OA\Delete(
+     *     path="/api/pqrs/{id}",
+     *     summary="Delete a PQRS (soft delete)",
+     *     tags={"PQRS"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="PQRS deleted successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="PQRS eliminada exitosamente (soft deleted).")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="PQRS not found"
+     *     ),
+     *     @OA\Response(
+     *         response=409,
+     *         description="PQRS already deleted"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error"
+     *     )
+     * )
+     */
     public function destroy(Pqrs $pqrs)
     {
         try {

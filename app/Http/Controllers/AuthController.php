@@ -6,33 +6,39 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
     public function login(Request $request)
     {
-        $credentials = $request->only('email', 'password');
+        $credentials = $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
 
-        if (!$token = auth('api')->attempt($credentials)) {
+        if (!Auth::attempt($credentials)) {
             return response()->json(['error' => 'Credenciales inválidas'], 401);
         }
 
+        $user = Auth::user();
+        $token = $user->createToken('api-token')->plainTextToken;
+
         return response()->json([
             'access_token' => $token,
-            'token_type'   => 'bearer',
-            'expires_in'   => auth('api')->factory()->getTTL() * 60
+            'token_type'   => 'Bearer',
+            'user' => $user
         ]);
     }
 
-    public function logout()
+    public function logout(Request $request)
     {
-        auth('api')->logout();
+        $request->user()->currentAccessToken()->delete();
         return response()->json(['message' => 'Sesión cerrada']);
     }
 
-    public function me()
+    public function me(Request $request)
     {
-        return response()->json(auth('api')->user());
+        return response()->json($request->user());
     }
 }

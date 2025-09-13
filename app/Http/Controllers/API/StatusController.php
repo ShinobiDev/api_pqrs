@@ -21,11 +21,49 @@ class StatusController extends Controller
         $this->service = $service;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/statuses",
+     *     summary="Get all statuses",
+     *     tags={"Statuses"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="List of statuses",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="name", type="string", example="Active")
+     *             )
+     *         )
+     *     )
+     * )
+     */
     public function index()
     {
         return response()->json($this->service->getAll());
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/statuses",
+     *     summary="Create a new status",
+     *     tags={"Statuses"},
+     *     security={{"sanctum":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"name"},
+     *             @OA\Property(property="name", type="string", example="Pending")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Status created successfully"
+     *     )
+     * )
+     */
     public function store(Request $request)
     {
         $data = $request->validate([

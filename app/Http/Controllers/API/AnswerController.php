@@ -16,6 +16,27 @@ class AnswerController extends Controller
         $this->service = $service;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/answers",
+     *     summary="Get all answers",
+     *     tags={"Answers"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="List of answers",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="pqrs_id", type="integer", example=1),
+     *                 @OA\Property(property="user_id", type="integer", example=1),
+     *                 @OA\Property(property="description", type="string", example="Esta es la respuesta al PQRS")
+     *             )
+     *         )
+     *     )
+     * )
+     */
     public function index()
     {
         try {
@@ -29,6 +50,31 @@ class AnswerController extends Controller
         }
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/answers",
+     *     summary="Create a new answer",
+     *     tags={"Answers"},
+     *     security={{"sanctum":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"pqrs_id","user_id","description"},
+     *             @OA\Property(property="pqrs_id", type="integer", example=1),
+     *             @OA\Property(property="user_id", type="integer", example=1),
+     *             @OA\Property(property="description", type="string", example="Esta es la respuesta al PQRS")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Answer created successfully"
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error"
+     *     )
+     * )
+     */
     public function store(Request $request)
     {
         try {

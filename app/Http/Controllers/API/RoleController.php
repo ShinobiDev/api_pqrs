@@ -20,11 +20,55 @@ class RoleController extends Controller
         $this->service = $service;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/roles",
+     *     summary="Get all roles",
+     *     tags={"Roles"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="List of roles",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="name", type="string", example="Admin"),
+     *                 @OA\Property(property="description", type="string", example="Administrator role")
+     *             )
+     *         )
+     *     )
+     * )
+     */
     public function index()
     {
         return response()->json($this->service->getAll());
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/roles",
+     *     summary="Create a new role",
+     *     tags={"Roles"},
+     *     security={{"sanctum":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"name","description"},
+     *             @OA\Property(property="name", type="string", example="Manager"),
+     *             @OA\Property(property="description", type="string", example="Manager role description")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Role created successfully"
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error"
+     *     )
+     * )
+     */
     public function store(Request $request)
     {
         $data = $request->validate([

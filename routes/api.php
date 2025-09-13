@@ -10,6 +10,8 @@ use App\Http\Controllers\API\TypeController;
 use App\Http\Controllers\API\UserController;
 use App\Http\Controllers\API\AnswerController;
 use App\Http\Controllers\API\StatusController;
+use App\Http\Controllers\API\StateController;
+use App\Http\Controllers\API\CityController;
 /*
 |--------------------------------------------------------------------------
 | API Routes

@@ -15,6 +15,8 @@ class CreateUsersTable extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('user_type_id');
+            $table->unsignedBigInteger('client_id')->nullable();
             $table->string('name');
             $table->unsignedBigInteger('document_type_id');
             $table->string('document')->unique();
@@ -28,6 +30,8 @@ class CreateUsersTable extends Migration
             $table->timestamps();
             $table->softDeletes();
 
+            $table->foreign('user_type_id')->references('id')->on('types');
+            $table->foreign('client_id')->references('id')->on('users');
             $table->foreign('document_type_id')->references('id')->on('types');
             $table->foreign('role_id')->references('id')->on('roles');
             $table->foreign('status_id')->references('id')->on('statuses');

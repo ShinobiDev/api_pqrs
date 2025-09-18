@@ -17,6 +17,7 @@ class TypeSeeder extends Seeder
         // Tipos principales
         $document = Type::create(['name' => 'Documentos', 'parent_type_id' => null]);
         $pqrs = Type::create(['name' => 'Pqrs', 'parent_type_id' => null]);
+        $user = Type::create(['name' => 'Usuarios', 'parent_type_id' => null]);
 
         // Tipos hijos
         Type::insert([
@@ -24,6 +25,13 @@ class TypeSeeder extends Seeder
             ['name' => 'Tarjeta de Identidad', 'parent_type_id' => $document->id, 'created_at' => now(), 'updated_at' => now()],
             ['name' => 'Cédula de Extranjería', 'parent_type_id' => $document->id, 'created_at' => now(), 'updated_at' => now()],
             ['name' => 'Passaporte', 'parent_type_id' => $document->id, 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'NIT', 'parent_type_id' => $document->id, 'created_at' => now(), 'updated_at' => now()],
+        ]);
+
+        Type::insert([
+            ['name' => 'Administrador', 'parent_type_id' => $user->id, 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'Cliente', 'parent_type_id' => $user->id, 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'Usuario', 'parent_type_id' => $user->id, 'created_at' => now(), 'updated_at' => now()],
         ]);
 
         Type::insert([
@@ -35,7 +43,5 @@ class TypeSeeder extends Seeder
             ['name' => 'Horarios Inapropiados', 'parent_type_id' => $pqrs->id, 'created_at' => now(), 'updated_at' => now()],
             ['name' => 'Requerimiento informático', 'parent_type_id' => $pqrs->id, 'created_at' => now(), 'updated_at' => now()]
         ]);
-
-
     }
 }

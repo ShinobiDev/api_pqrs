@@ -11,13 +11,13 @@ class UserService
 {
     public function index()
     {
-        return User::all();
+        return User::with(['type', 'client', 'documentType', 'role', 'status'])->get();
     }
 
     public function store(UserDTO $dto): User
     {
         try {
-            
+
             $hashedPassword = Hash::make($dto->password);
 
             $user = User::create([
@@ -28,11 +28,10 @@ class UserService
                 'email' => $dto->email,
                 'phone' => $dto->phone,
                 'status_id' => $dto->status_id,
-                'password' => $hashedPassword, 
+                'password' => $hashedPassword,
             ]);
 
             return $user;
-
         } catch (\Illuminate\Database\QueryException $e) {
             throw new \Exception('Error de base de datos al crear el usuario: ' . $e->getMessage(), 0, $e);
         } catch (\Exception $e) {

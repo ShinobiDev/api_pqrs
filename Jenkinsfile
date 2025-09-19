@@ -105,10 +105,9 @@ pipeline {
                     # Generar clave de aplicación si artisan existe
                     if [ -f artisan ]; then
                         php artisan key:generate --no-interaction --force || echo "No se pudo generar la key"
-                        # Asegurar que la app lea la nueva config
+                        # Asegurar que la app lea la nueva config (no cacheamos en CI)
                         php artisan config:clear || true
                         php artisan cache:clear || true
-                        php artisan config:cache || true
                     fi
 
                     # Hacer que PHPUnit use la misma configuración copiando .env a .env.testing
@@ -164,17 +163,17 @@ pipeline {
                 sh '''
                     # Ejecutar migraciones para testing si artisan existe
                     if [ -f artisan ]; then
+                        # Limpiar cachés para que tomen .env/.env.testing
+                        php artisan config:clear || true
+                        php artisan cache:clear || true
+
                         php artisan migrate --force --no-interaction || echo "No se pudieron ejecutar migraciones"
-                        
+
                         # Ejecutar seeders si existen
                         php artisan db:seed --force --no-interaction || echo "No hay seeders disponibles"
-                        
-                        # Ejecutar pruebas
-                        if [ -f vendor/bin/phpunit ]; then
-                            ./vendor/bin/phpunit --testdox || echo "Algunas pruebas fallaron"
-                        else
-                            php artisan test || echo "No hay pruebas configuradas"
-                        fi
+
+                        # Ejecutar pruebas usando el runner de Laravel para cargar .env.testing
+                        php artisan test --env=testing || echo "Algunas pruebas fallaron"
                     else
                         echo "No es un proyecto Laravel - saltando pruebas"
                     fi

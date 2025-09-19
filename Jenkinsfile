@@ -183,8 +183,8 @@ pipeline {
                         touch database/database.sqlite
                         php artisan migrate:fresh --seed --force --no-interaction || echo "No se pudieron ejecutar migraciones/seeders"
 
-                        # Ejecutar pruebas usando el runner de Laravel para cargar .env.testing (sin TTY)
-                        php artisan test --env=testing --without-tty || echo "Algunas pruebas fallaron"
+                        # Ejecutar pruebas usando el runner de Laravel para cargar .env.testing
+                        php artisan test --env=testing || echo "Algunas pruebas fallaron"
                     else
                         echo "No es un proyecto Laravel - saltando pruebas"
                     fi

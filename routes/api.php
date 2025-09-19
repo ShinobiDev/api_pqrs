@@ -81,6 +81,16 @@ Route::post('/cities', [CityController::class, 'store']);
 Route::put('/cities/{city}', [CityController::class, 'update']);
 Route::delete('/cities/{city}', [CityController::class, 'destroy']);
 
+// Health check endpoint for Docker
+Route::get('/health', function () {
+    return response()->json([
+        'status' => 'ok',
+        'timestamp' => now()->toISOString(),
+        'service' => 'PQRS API',
+        'version' => '1.0.0'
+    ]);
+});
+
 // Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 //     return $request->user();
 // });

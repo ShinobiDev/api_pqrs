@@ -108,6 +108,9 @@ pipeline {
                         # Asegurar que la app lea la nueva config (no cacheamos en CI)
                         php artisan config:clear || true
                         php artisan cache:clear || true
+                        # Generar también la key para entorno de testing (.env.testing)
+                        cp .env .env.testing
+                        php artisan key:generate --env=testing --no-interaction --force || echo "No se pudo generar la key de testing"
                     fi
 
                     # Hacer que PHPUnit use la misma configuración copiando .env a .env.testing
@@ -167,10 +170,10 @@ pipeline {
                         php artisan config:clear || true
                         php artisan cache:clear || true
 
-                        php artisan migrate --force --no-interaction || echo "No se pudieron ejecutar migraciones"
-
-                        # Ejecutar seeders si existen
-                        php artisan db:seed --force --no-interaction || echo "No hay seeders disponibles"
+                        # Asegurar BD limpia para evitar duplicados en seeders
+                        rm -f database/database.sqlite
+                        touch database/database.sqlite
+                        php artisan migrate:fresh --seed --force --no-interaction || echo "No se pudieron ejecutar migraciones/seeders"
 
                         # Ejecutar pruebas usando el runner de Laravel para cargar .env.testing
                         php artisan test --env=testing || echo "Algunas pruebas fallaron"

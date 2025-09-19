@@ -6,7 +6,8 @@ pipeline {
         PHP_VERSION = '8.1'
         COMPOSER_HOME = '/tmp/composer'
         DB_CONNECTION = 'sqlite'
-        DB_DATABASE = ':memory:'
+        // Usar DB SQLite en archivo para persistir entre procesos PHP
+        DB_DATABASE = 'database/database.sqlite'
         APP_ENV = 'testing'
         APP_DEBUG = 'true'
     }
@@ -94,12 +95,24 @@ pipeline {
                     echo "APP_ENV=testing" > .env
                     echo "APP_DEBUG=true" >> .env
                     echo "DB_CONNECTION=sqlite" >> .env
-                    echo "DB_DATABASE=:memory:" >> .env
+                    # Usar base de datos SQLite en archivo para persistir entre procesos
+                    echo "DB_DATABASE=database/database.sqlite" >> .env
                     
+                    # Asegurar base de datos SQLite (archivo) exista
+                    mkdir -p database
+                    [ -f database/database.sqlite ] || touch database/database.sqlite
+
                     # Generar clave de aplicación si artisan existe
                     if [ -f artisan ]; then
                         php artisan key:generate --no-interaction --force || echo "No se pudo generar la key"
+                        # Asegurar que la app lea la nueva config
+                        php artisan config:clear || true
+                        php artisan cache:clear || true
+                        php artisan config:cache || true
                     fi
+
+                    # Hacer que PHPUnit use la misma configuración copiando .env a .env.testing
+                    cp .env .env.testing
                     
                     # Crear directorios necesarios
                     mkdir -p storage/logs

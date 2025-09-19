@@ -170,13 +170,22 @@ pipeline {
                         php artisan config:clear || true
                         php artisan cache:clear || true
 
-                        # Asegurar APP_KEY presente en entorno testing
-                        php artisan key:generate --env=testing --no-interaction --force || echo "No se pudo regenerar la key de testing"
-                        # Verificación no sensible de APP_KEY en .env.testing
-                        if [ -f .env.testing ]; then
-                          APPKEY_LINE=$(grep -E '^APP_KEY=' .env.testing || true)
-                          [ -n "$APPKEY_LINE" ] && echo "APP_KEY (testing): presente" || echo "APP_KEY (testing): faltante"
-                        fi
+                                                # Asegurar APP_KEY presente en entorno testing escribiéndola directamente en .env.testing
+                                                if [ -f .env.testing ]; then
+                                                    sed -i '/^APP_KEY=/d' .env.testing || true
+                                                else
+                                                    cp .env .env.testing
+                                                fi
+                                                TEST_KEY=$(php -r "echo base64_encode(random_bytes(32));")
+                                                echo "APP_KEY=base64:${TEST_KEY}" >> .env.testing
+                                                # Verificación no sensible de APP_KEY en .env.testing
+                                                APPKEY_LINE=$(grep -E '^APP_KEY=' .env.testing || true)
+                                                [ -n "$APPKEY_LINE" ] && echo "APP_KEY (testing): presente" || echo "APP_KEY (testing): faltante"
+
+                                                # Diagnóstico: archivo de entorno y APP_ENV activos en runtime
+                                                php -r "require 'vendor/autoload.php'; $app=require 'bootstrap/app.php'; if (method_exists($app,'environmentFilePath')) { echo 'ENV_FILE: '.$app->environmentFilePath(), PHP_EOL; } else { echo 'ENV_FILE: unknown', PHP_EOL; } echo 'APP_ENV: '.$app->environment(), PHP_EOL;" || true
+                                                # Diagnóstico: confirmar que config('app.key') esté definido (sin exponer valor)
+                                                php -r "require 'vendor/autoload.php'; $app=require 'bootstrap/app.php'; $kernel=$app->make(Illuminate\\Contracts\\Console\\Kernel::class); $kernel->bootstrap(); echo 'CONFIG APP_KEY set: ', (config('app.key') ? 'yes' : 'no'), PHP_EOL;" || true
 
                         # Asegurar BD limpia para evitar duplicados en seeders
                         rm -f database/database.sqlite

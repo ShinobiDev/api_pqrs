@@ -7,7 +7,6 @@ pipeline {
         COMPOSER_HOME = '/tmp/composer'
         DB_CONNECTION = 'sqlite'
         DB_DATABASE = ':memory:'
-        APP_KEY = 'base64:YourGeneratedAppKeyHere='
         APP_ENV = 'testing'
         APP_DEBUG = 'true'
     }

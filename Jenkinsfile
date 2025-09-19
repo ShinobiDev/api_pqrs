@@ -170,13 +170,21 @@ pipeline {
                         php artisan config:clear || true
                         php artisan cache:clear || true
 
+                        # Asegurar APP_KEY presente en entorno testing
+                        php artisan key:generate --env=testing --no-interaction --force || echo "No se pudo regenerar la key de testing"
+                        # Verificación no sensible de APP_KEY en .env.testing
+                        if [ -f .env.testing ]; then
+                          APPKEY_LINE=$(grep -E '^APP_KEY=' .env.testing || true)
+                          [ -n "$APPKEY_LINE" ] && echo "APP_KEY (testing): presente" || echo "APP_KEY (testing): faltante"
+                        fi
+
                         # Asegurar BD limpia para evitar duplicados en seeders
                         rm -f database/database.sqlite
                         touch database/database.sqlite
                         php artisan migrate:fresh --seed --force --no-interaction || echo "No se pudieron ejecutar migraciones/seeders"
 
-                        # Ejecutar pruebas usando el runner de Laravel para cargar .env.testing
-                        php artisan test --env=testing || echo "Algunas pruebas fallaron"
+                        # Ejecutar pruebas usando el runner de Laravel para cargar .env.testing (sin TTY)
+                        php artisan test --env=testing --without-tty || echo "Algunas pruebas fallaron"
                     else
                         echo "No es un proyecto Laravel - saltando pruebas"
                     fi

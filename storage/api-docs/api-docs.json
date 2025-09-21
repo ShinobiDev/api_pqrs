@@ -2,7 +2,7 @@
     "openapi": "3.0.0",
     "info": {
         "title": "PQRS API Documentation",
-        "description": "API para el sistema de gestión de PQRS (Peticiones, Quejas, Reclamos y Sugerencias)",
+        "description": "API para el sistema de gestión de PQRS (Peticiones, Quejas, Reclamos y Sugerencias) con monitoreo y métricas integradas",
         "contact": {
             "email": "admin@example.com"
         },
@@ -1361,6 +1361,128 @@
                     }
                 ]
             }
+        },
+        "/api/health": {
+            "get": {
+                "tags": [
+                    "Monitoring"
+                ],
+                "summary": "Verificar estado de salud del sistema",
+                "description": "Endpoint para verificar el estado de salud de la aplicación y sus dependencias",
+                "operationId": "healthCheck",
+                "responses": {
+                    "200": {
+                        "description": "Sistema saludable",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "healthy"
+                                        },
+                                        "timestamp": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2025-09-20T20:30:00Z"
+                                        },
+                                        "services": {
+                                            "properties": {
+                                                "database": {
+                                                    "type": "string",
+                                                    "example": "healthy"
+                                                },
+                                                "application": {
+                                                    "type": "string",
+                                                    "example": "healthy"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "version": {
+                                            "type": "string",
+                                            "example": "1.0.0"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "Sistema no saludable",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "unhealthy"
+                                        },
+                                        "timestamp": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2025-09-20T20:30:00Z"
+                                        },
+                                        "services": {
+                                            "properties": {
+                                                "database": {
+                                                    "type": "string",
+                                                    "example": "unhealthy"
+                                                },
+                                                "application": {
+                                                    "type": "string",
+                                                    "example": "healthy"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Database connection failed"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/metrics": {
+            "get": {
+                "tags": [
+                    "Monitoring"
+                ],
+                "summary": "Obtener métricas de Prometheus",
+                "description": "Endpoint para obtener métricas del sistema en formato Prometheus",
+                "operationId": "getMetrics",
+                "responses": {
+                    "200": {
+                        "description": "Métricas generadas exitosamente",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "# HELP http_requests_total Total HTTP requests\\n# TYPE http_requests_total counter\\nhttp_requests_total{method='GET',status_code='200',route='metrics'} 1\\n# HELP pqrs_total_pqrs_count Total number of PQRS records\\n# TYPE pqrs_total_pqrs_count gauge\\npqrs_total_pqrs_count 0"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno del servidor",
+                        "content": {
+                            "text/plain": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "Error generating metrics: Connection failed"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -1375,20 +1497,32 @@
     },
     "tags": [
         {
+            "name": "Authentication",
+            "description": "Endpoints de autenticación y autorización"
+        },
+        {
+            "name": "PQRS",
+            "description": "Gestión de Peticiones, Quejas, Reclamos y Sugerencias"
+        },
+        {
+            "name": "Users",
+            "description": "Gestión de usuarios del sistema"
+        },
+        {
+            "name": "Roles",
+            "description": "Gestión de roles y permisos"
+        },
+        {
+            "name": "Monitoring",
+            "description": "Endpoints para monitoreo y métricas del sistema"
+        },
+        {
             "name": "Answers",
             "description": "Answers"
         },
         {
             "name": "Cities",
             "description": "Cities"
-        },
-        {
-            "name": "PQRS",
-            "description": "PQRS"
-        },
-        {
-            "name": "Roles",
-            "description": "Roles"
         },
         {
             "name": "States",
@@ -1401,14 +1535,6 @@
         {
             "name": "Types",
             "description": "Types"
-        },
-        {
-            "name": "Users",
-            "description": "Users"
-        },
-        {
-            "name": "Authentication",
-            "description": "Authentication"
         }
     ]
 }

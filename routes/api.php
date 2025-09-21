@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\API\PqrsController;
@@ -13,6 +14,7 @@ use App\Http\Controllers\API\StatusController;
 use App\Http\Controllers\API\StateController;
 use App\Http\Controllers\API\CityController;
 use App\Http\Controllers\MetricsController;
+use App\Http\Controllers\HealthController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -121,6 +123,33 @@ Route::get('/health', function () {
 // Metrics endpoint (no auth)
 Route::get('/metrics', MetricsController::class);
 
+// Health check endpoint (no auth)
+Route::get('/health', HealthController::class);
+
+/**
+ * @OA\Get(
+ *     path="/api/test/middleware",
+ *     operationId="testMiddleware",
+ *     tags={"Monitoring"},
+ *     summary="Probar comportamiento del middleware",
+ *     description="Endpoint para probar y simular el comportamiento del middleware de métricas",
+ *     @OA\Response(
+ *         response=200,
+ *         description="Test completado exitosamente",
+ *         @OA\MediaType(
+ *             mediaType="application/json",
+ *             @OA\Schema(
+ *                 type="object",
+ *                 @OA\Property(
+ *                     property="message",
+ *                     type="string",
+ *                     example="Middleware test completed"
+ *                 )
+ *             )
+ *         )
+ *     )
+ * )
+ */
 // Test endpoint to simulate middleware behavior
 Route::get('/test/middleware', function () {
     $registry = App\Services\PrometheusRegistryService::getRegistry();

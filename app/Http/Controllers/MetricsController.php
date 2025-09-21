@@ -6,8 +6,45 @@ use App\Services\PrometheusRegistryService;
 use Illuminate\Http\Response;
 use Prometheus\RenderTextFormat;
 
+/**
+ * @OA\Tag(
+ *     name="Monitoring",
+ *     description="Endpoints para monitoreo y métricas del sistema"
+ * )
+ */
 class MetricsController extends Controller
 {
+    /**
+     * @OA\Get(
+     *     path="/api/metrics",
+     *     operationId="getMetrics",
+     *     tags={"Monitoring"},
+     *     summary="Obtener métricas de Prometheus",
+     *     description="Endpoint para obtener métricas del sistema en formato Prometheus",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Métricas generadas exitosamente",
+     *         @OA\MediaType(
+     *             mediaType="text/plain",
+     *             @OA\Schema(
+     *                 type="string",
+     *                 example="# HELP http_requests_total Total HTTP requests\n# TYPE http_requests_total counter\nhttp_requests_total{method='GET',status_code='200',route='metrics'} 1\n# HELP pqrs_total_pqrs_count Total number of PQRS records\n# TYPE pqrs_total_pqrs_count gauge\npqrs_total_pqrs_count 0"
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Error interno del servidor",
+     *         @OA\MediaType(
+     *             mediaType="text/plain",
+     *             @OA\Schema(
+     *                 type="string",
+     *                 example="Error generating metrics: Connection failed"
+     *             )
+     *         )
+     *     )
+     * )
+     */
     public function __invoke(): Response
     {
         try {

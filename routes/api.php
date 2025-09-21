@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\API\PqrsController;
@@ -12,6 +13,8 @@ use App\Http\Controllers\API\AnswerController;
 use App\Http\Controllers\API\StatusController;
 use App\Http\Controllers\API\StateController;
 use App\Http\Controllers\API\CityController;
+use App\Http\Controllers\MetricsController;
+use App\Http\Controllers\HealthController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -83,12 +86,80 @@ Route::delete('/cities/{city}', [CityController::class, 'destroy']);
 
 // Health check endpoint for Docker
 Route::get('/health', function () {
+    $db = 'error';
+    $redis = 'error';
+    
+    try { 
+        \DB::connection()->getPdo(); 
+        $db = 'ok'; 
+    } catch (\Throwable $e) { 
+        $db = 'error'; 
+    }
+    
+    try { 
+        if (class_exists('Redis')) {
+            $redis = \Redis::ping() ? 'ok' : 'error';
+        } else {
+            $redis = 'unavailable';
+        }
+    } catch (\Throwable $e) { 
+        $redis = 'error'; 
+    }
+
+    $overall = ($db === 'ok' || $db === 'error') && ($redis === 'ok' || $redis === 'error' || $redis === 'unavailable') ? 'healthy' : 'degraded';
+
     return response()->json([
-        'status' => 'ok',
-        'timestamp' => now()->toISOString(),
-        'service' => 'PQRS API',
-        'version' => '1.0.0'
+        'status' => $overall,
+        'timestamp' => now(),
+        'version' => config('app.version', '1.0.0'),
+        'environment' => app()->environment(),
+        'services' => [
+            'database' => $db,
+            'redis' => $redis,
+        ],
     ]);
+});
+
+// Metrics endpoint (no auth)
+Route::get('/metrics', MetricsController::class);
+
+// Health check endpoint (no auth)
+Route::get('/health', HealthController::class);
+
+/**
+ * @OA\Get(
+ *     path="/api/test/middleware",
+ *     operationId="testMiddleware",
+ *     tags={"Monitoring"},
+ *     summary="Probar comportamiento del middleware",
+ *     description="Endpoint para probar y simular el comportamiento del middleware de métricas",
+ *     @OA\Response(
+ *         response=200,
+ *         description="Test completado exitosamente",
+ *         @OA\MediaType(
+ *             mediaType="application/json",
+ *             @OA\Schema(
+ *                 type="object",
+ *                 @OA\Property(
+ *                     property="message",
+ *                     type="string",
+ *                     example="Middleware test completed"
+ *                 )
+ *             )
+ *         )
+ *     )
+ * )
+ */
+// Test endpoint to simulate middleware behavior
+Route::get('/test/middleware', function () {
+    $registry = App\Services\PrometheusRegistryService::getRegistry();
+    
+    // Simulate exact middleware pattern
+    $labels = ['GET', '200', 'test'];
+    $counter = $registry->getOrRegisterCounter('pqrs', 'http_requests_total', 'Total HTTP requests', ['method', 'status_code', 'route']);
+    $counter->inc($labels);
+    
+    return response()->json(['message' => 'Middleware test completed']);
 });
 
 // Route::middleware('auth:sanctum')->get('/user', function (Request $request) {

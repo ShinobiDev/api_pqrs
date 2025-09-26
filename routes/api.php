@@ -63,6 +63,9 @@ Route::middleware('auth:api')->group(function () {
     // USER
     Route::get('/users', [UserController::class, 'index']);
     Route::get('/users/clients', [UserController::class, 'getClientUsers']);
+    Route::get('/users/clients/active', [UserController::class, 'getActiveClientUsers']);
+    Route::get('/users/clients/inactive', [UserController::class, 'getInactiveClientUsers']);
+    Route::get('/users/client/{clientId}', [UserController::class, 'getUsersByClient']);
     Route::get('/users/{user}', [UserController::class, 'show']);
     Route::post('/users', [UserController::class, 'store']);
     Route::put('/users/{user}', [UserController::class, 'update']);
@@ -99,20 +102,17 @@ Route::get('/health', function () {
     $redis = 'error';
 
     try {
-        \DB::connection()->getPdo();
+        DB::select('SELECT 1');
         $db = 'ok';
     } catch (\Throwable $e) {
         $db = 'error';
     }
 
     try {
-        if (class_exists('Redis')) {
-            $redis = \Redis::ping() ? 'ok' : 'error';
-        } else {
-            $redis = 'unavailable';
-        }
+        \Illuminate\Support\Facades\Redis::ping();
+        $redis = 'ok';
     } catch (\Throwable $e) {
-        $redis = 'error';
+        $redis = 'unavailable';
     }
 
     $overall = ($db === 'ok' || $db === 'error') && ($redis === 'ok' || $redis === 'error' || $redis === 'unavailable') ? 'healthy' : 'degraded';

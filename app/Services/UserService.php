@@ -88,6 +88,29 @@ class UserService
             ->findOrFail($user->id);
     }
 
+    public function getUsersByClient($clientId)
+    {
+        return User::with(['type', 'client', 'documentType', 'role', 'status'])
+            ->where('client_id', $clientId)
+            ->get();
+    }
+
+    public function getActiveClientUsers()
+    {
+        return User::with(['type', 'client', 'documentType', 'role', 'status'])
+            ->where('user_type_id', 7) // Tipo cliente
+            ->where('status_id', 1) // Estado activo (asumiendo que 1 = activo)
+            ->get();
+    }
+
+    public function getInactiveClientUsers()
+    {
+        return User::with(['type', 'client', 'documentType', 'role', 'status'])
+            ->where('user_type_id', 7) // Tipo cliente
+            ->where('status_id', '!=', 1) // Estado diferente a activo
+            ->get();
+    }
+
     public function destroy(User $user): bool
     {
         try {

@@ -80,6 +80,135 @@ class UserController extends Controller
 
     /**
      * @OA\Get(
+     *     path="/api/users/client/{clientId}",
+     *     summary="Get all users by client ID",
+     *     tags={"Users"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="clientId",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer"),
+     *         description="ID del cliente"
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="List of users for the specified client",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(ref="#/components/schemas/User")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Client not found"
+     *     )
+     * )
+     */
+    public function getUsersByClient($clientId)
+    {
+        try {
+            $users = $this->service->getUsersByClient($clientId);
+            
+            return response()->json([
+                'success' => true,
+                'data' => $users,
+                'message' => 'Usuarios del cliente obtenidos exitosamente'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener los usuarios del cliente: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/users/clients/active",
+     *     summary="Get all active client users",
+     *     tags={"Users"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="List of active client users",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/User")),
+     *             @OA\Property(property="message", type="string", example="Usuarios clientes activos obtenidos exitosamente")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized"
+     *     )
+     * )
+     */
+    public function getActiveClientUsers()
+    {
+        try {
+            $users = $this->service->getActiveClientUsers();
+            
+            return response()->json([
+                'success' => true,
+                'data' => $users,
+                'message' => 'Usuarios clientes activos obtenidos exitosamente'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener los usuarios clientes activos: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/users/clients/inactive",
+     *     summary="Get all inactive client users",
+     *     tags={"Users"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="List of inactive client users",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/User")),
+     *             @OA\Property(property="message", type="string", example="Usuarios clientes inactivos obtenidos exitosamente")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized"
+     *     )
+     * )
+     */
+    public function getInactiveClientUsers()
+    {
+        try {
+            $users = $this->service->getInactiveClientUsers();
+            
+            return response()->json([
+                'success' => true,
+                'data' => $users,
+                'message' => 'Usuarios clientes inactivos obtenidos exitosamente'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener los usuarios clientes inactivos: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * @OA\Get(
      *     path="/api/users/{id}",
      *     summary="Get user details",
      *     tags={"Users"},

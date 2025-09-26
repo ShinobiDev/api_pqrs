@@ -13,6 +13,13 @@ class TypeService
         return Type::all();
     }
 
+    public function getDocumentTypes()
+    {
+        return Type::where('parent_type_id', 1)
+                  ->select('id', 'name')
+                  ->get();
+    }
+
     public function create(TypeDTO $dto): Type
     {
         return Type::create([

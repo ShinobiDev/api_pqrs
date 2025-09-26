@@ -47,6 +47,30 @@ class TypeController extends Controller
     }
 
     /**
+     * @OA\Get(
+     *     path="/api/types/documents",
+     *     summary="Get all document types",
+     *     tags={"Types"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="List of document types",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="name", type="string", example="Cédula de Ciudadanía")
+     *             )
+     *         )
+     *     )
+     * )
+     */
+    public function getDocumentTypes()
+    {
+        return response()->json($this->service->getDocumentTypes());
+    }
+
+    /**
      * @OA\Post(
      *     path="/api/types",
      *     summary="Create a new type",

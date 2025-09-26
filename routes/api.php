@@ -12,6 +12,8 @@ use App\Http\Controllers\API\AnswerController;
 use App\Http\Controllers\API\StatusController;
 use App\Http\Controllers\API\StateController;
 use App\Http\Controllers\API\CityController;
+use App\Http\Controllers\API\FormDataController;
+use App\Http\Controllers\UserFormDataController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -30,9 +32,9 @@ Route::middleware('auth:api')->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
 
     // STATUS
-    Route::get('statuses', [StatusController::class, 'index']);             
-    Route::post('statuses', [StatusController::class, 'store']);        
-    Route::put('statuses/{status}', [StatusController::class, 'update']); 
+    Route::get('statuses', [StatusController::class, 'index']);
+    Route::post('statuses', [StatusController::class, 'store']);
+    Route::put('statuses/{status}', [StatusController::class, 'update']);
     Route::delete('statuses/{status}', [StatusController::class, 'destroy'])->withTrashed();
 
     Route::post('statuses/{id}/restore', [StatusController::class, 'restore']); // Para restaurar un status (método POST para una acción)
@@ -46,12 +48,19 @@ Route::middleware('auth:api')->group(function () {
 
     // TYPE
     Route::get('types', [TypeController::class, 'index']);
+    Route::get('types/documents', [TypeController::class, 'getDocumentTypes']);
     Route::post('types', [TypeController::class, 'store']);
     Route::put('types/{type}', [TypeController::class, 'update']);
     Route::delete('types/{type}', [TypeController::class, 'destroy'])->withTrashed();
 
+    // Form Data Routes
+    Route::get('/users/form-data/client', [FormDataController::class, 'getClientFormData']);
+    Route::get('/users/form-data/users', [UserFormDataController::class, 'index']);
+
     // USER
     Route::get('/users', [UserController::class, 'index']);
+    Route::get('/users/clients', [UserController::class, 'getClientUsers']);
+    Route::get('/users/{user}', [UserController::class, 'show']);
     Route::post('/users', [UserController::class, 'store']);
     Route::put('/users/{user}', [UserController::class, 'update']);
     Route::delete('/users/{user}', [UserController::class, 'destroy'])->withTrashed();

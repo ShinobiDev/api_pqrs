@@ -15,7 +15,7 @@ class UserController extends Controller
 {
     protected $service;
 
-    public function __construct(UserService $service) 
+    public function __construct(UserService $service)
     {
         $this->service = $service;
     }
@@ -51,6 +51,58 @@ class UserController extends Controller
     public function index()
     {
         return response()->json($this->service->index());
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/users/clients",
+     *     summary="Get all client users",
+     *     tags={"Users"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="List of client users",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(ref="#/components/schemas/User")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized"
+     *     )
+     * )
+     */
+    public function getClientUsers()
+    {
+        return response()->json($this->service->getClientUsers());
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/users/{id}",
+     *     summary="Get user details",
+     *     tags={"Users"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="User details retrieved successfully"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="User not found"
+     *     )
+     * )
+     */
+    public function show(User $user)
+    {
+        return response()->json($this->service->show($user));
     }
 
     /**
@@ -97,19 +149,22 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
+        //dd($request->all());
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'user_type_id' => 'required|integer|exists:types,id',
             'document_type_id' => 'required|integer|exists:types,id',
             'document' => 'required|string|max:50|unique:users,document',
             'role_id' => 'required|integer|exists:roles,id',
             'email' => 'required|email|max:255|unique:users,email',
             'phone' => 'required|string|max:20',
             'status_id' => 'required|integer|exists:statuses,id',
-            'password' => 'required|string|min:8', 
+            'password' => 'required|string|min:8',
+            'client_id' => 'nullable|integer|exists:users,id',
         ]);
 
         try {
-            
+
             $dto = UserDTO::fromArray($validated);
             $user = $this->service->store($dto);
 
@@ -117,19 +172,18 @@ class UserController extends Controller
                 'message' => 'Usuario creado exitosamente.',
                 'user' => $user->toArray()
             ], 201);
-
         } catch (\Illuminate\Validation\ValidationException $e) {
-            
+
             return response()->json([
                 'message' => 'Los datos proporcionados no son válidos.',
                 'errors' => $e->errors()
-            ], 422); 
+            ], 422);
         } catch (\Exception $e) {
-            
+
             return response()->json([
                 'message' => 'Ocurrió un error al intentar crear el usuario.',
                 'error' => $e->getMessage()
-            ], 500); 
+            ], 500);
         }
     }
 
@@ -180,9 +234,10 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         try {
-            
+
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
+                'user_type_id' => 'required|integer|exists:types,id',
                 'document_type_id' => 'required|integer|exists:types,id',
                 'document' => [
                     'required',
@@ -199,43 +254,45 @@ class UserController extends Controller
                 ],
                 'phone' => 'required|string|max:20',
                 'status_id' => 'required|integer|exists:statuses,id',
-                'password' => 'nullable|string|min:8', // 'nullable' permite que el campo sea opcional
+                'password' => 'nullable|string|min:8',
+                'client_id' => 'nullable|integer|exists:users,id',
             ]);
 
-            
+
             $dto = new EditUserDTO(
-                $user->id, // Este es el ID del usuario que se va a actualizar
+                $user->id,
                 $validated['name'],
+                $validated['user_type_id'],
                 $validated['document_type_id'],
                 $validated['document'],
                 $validated['role_id'],
                 $validated['email'],
                 $validated['phone'],
                 $validated['status_id'],
-                $validated['password'] ?? null // Pasa null si la contraseña no se proporcionó
+                $validated['password'] ?? null,
+                $validated['client_id'] ?? null
             );
 
             $updatedUser = $this->service->update($dto);
 
             return response()->json([
                 'message' => 'Usuario actualizado exitosamente.',
-                'user' => $updatedUser->toArray() 
+                'user' => $updatedUser->toArray()
             ], 200);
-
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'message' => 'Usuario no encontrado.'
-            ], 404); 
+            ], 404);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'message' => 'Los datos proporcionados no son válidos para la actualización.',
                 'errors' => $e->errors()
-            ], 422); 
+            ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Ocurrió un error al intentar actualizar el usuario.',
-                'error' => $e->getMessage() 
-            ], 500); 
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
@@ -278,7 +335,7 @@ class UserController extends Controller
             if ($user->trashed()) {
                 return response()->json([
                     'message' => 'El usuario ya ha sido eliminado previamente.'
-                ], 409); 
+                ], 409);
             }
 
             $deleted = $this->service->destroy($user);
@@ -286,23 +343,22 @@ class UserController extends Controller
             if ($deleted) {
                 return response()->json([
                     'message' => 'Usuario eliminado exitosamente (soft deleted).'
-                ], 200); 
+                ], 200);
             } else {
                 return response()->json([
                     'message' => 'No se pudo eliminar el usuario.'
-                ], 500); 
+                ], 500);
             }
-
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'message' => 'Usuario no encontrado.'
-            ], 404); 
+            ], 404);
         } catch (\Exception $e) {
-            
+
             return response()->json([
                 'message' => 'Ocurrió un error al intentar eliminar el usuario.',
-                'error' => $e->getMessage() 
-            ], 500); 
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 }

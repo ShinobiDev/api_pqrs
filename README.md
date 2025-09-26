@@ -20,6 +20,7 @@ Esta es una API RESTful desarrollada en Laravel para la gestión de Peticiones, 
 8.  [Manejo de Errores](#manejo-de-errores)
 9.  [Contribución](#contribución)
 10. [Licencia](#licencia)
+11. [Desarrollo con Docker (Windows/PowerShell)](#desarrollo-con-docker-windowspowershell)
 
 ## 1. Características
 
@@ -307,6 +308,79 @@ Ejemplo: `6|uJ6D7u9oHhT3n75BJ2dhVeivJiB4I7FuzeU4qg18`
 - **uJ6D7u9oHhT3n75BJ2dhVeivJiB4I7FuzeU4qg18** = Hash de seguridad
 
 Este formato es estándar y seguro para Laravel Sanctum.
+
+## 11. Desarrollo con Docker (Windows/PowerShell)
+
+Para un entorno de desarrollo rápido en Windows, este proyecto incluye un script de ayuda en PowerShell que orquesta Docker Compose.
+
+Requisitos previos:
+
+- Docker Desktop para Windows (WSL2 backend recomendado)
+- PowerShell 5.1 o superior
+
+Ruta del script:
+
+- `scripts/docker-dev.ps1`
+
+Comandos disponibles (ejecutar desde la raíz del repo):
+
+- Mostrar ayuda
+    ```powershell
+    .\scripts\docker-dev.ps1 help
+    ```
+
+- Inicializar proyecto (crea `.env` a partir de `.env.docker.dev` si no existe y la red Docker)
+    ```powershell
+    .\scripts\docker-dev.ps1 init
+    ```
+
+- Construir imágenes Docker
+    ```powershell
+    .\scripts\docker-dev.ps1 build
+    ```
+
+- Levantar servicios en segundo plano e inicializar base de datos (ejecuta migraciones automáticamente)
+    ```powershell
+    .\scripts\docker-dev.ps1 up
+    ```
+
+- Ver logs (por servicio). Ejemplos: `app`, `mysql`, `redis`, `mailhog`, `nginx`
+    ```powershell
+    .\scripts\docker-dev.ps1 logs app
+    .\scripts\docker-dev.ps1 logs mailhog
+    ```
+
+- Entrar al contenedor de la app (shell)
+    ```powershell
+    .\scripts\docker-dev.ps1 shell
+    ```
+
+- Ejecutar migraciones y seeders manualmente
+    ```powershell
+    .\scripts\docker-dev.ps1 migrate
+    .\scripts\docker-dev.ps1 seed
+    ```
+
+- Apagar servicios y limpiar
+    ```powershell
+    .\scripts\docker-dev.ps1 down
+    .\scripts\docker-dev.ps1 clean
+    ```
+
+Servicios y puertos expuestos (desarrollo):
+
+- API Laravel: http://localhost:8000
+- Swagger UI: http://127.0.0.1:8000/api/documentation
+- Base de datos MySQL: localhost:3306 (usuario `pqrs_user`, DB `pqrs_db` por defecto)
+- Redis: localhost:6379
+- Correo de pruebas (Mailpit, servicio `mailhog`):
+    - UI: http://127.0.0.1:8025
+    - SMTP: 127.0.0.1:1025 (configurado en `.env.docker.dev`)
+
+Notas:
+
+- El script `up` ejecuta migraciones automáticamente. Si necesitas datos de ejemplo, ejecuta también `seed`.
+- Si ves mensajes de Xdebug en los logs y no estás depurando, son informativos y no bloquean; se pueden desactivar en la imagen de desarrollo si lo prefieres.
 
 ## 8. Manejo de Errores
 

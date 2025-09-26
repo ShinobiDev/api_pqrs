@@ -1,0 +1,113 @@
+services:
+  # ====================================
+  # Aplicación PHP Laravel
+  # ====================================
+  app:
+    build:
+      context: .
+      target: development
+      dockerfile: Dockerfile
+    container_name: pqrs-api-dev
+    command: sh -c "echo '<?php // Platform check disabled' > vendor/composer/platform_check.php && php artisan serve --host=0.0.0.0 --port=8000"
+    ports:
+      - "8000:8000"
+    volumes:
+      # Solo montar storage y bootstrap/cache para persistencia
+      - ./storage:/var/www/storage
+      - ./bootstrap/cache:/var/www/bootstrap/cache
+    environment:
+      - APP_NAME=PQRS API
+      - APP_ENV=local
+      - APP_KEY=base64:ymYCivMKi3dcAcJlMK2UpMcxnA1Ume1f+I0gmx+4VeA=
+      - APP_DEBUG=true
+      - APP_URL=http://localhost:8000
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_DATABASE=pqrs_db
+      - DB_USERNAME=pqrs_user
+      - DB_PASSWORD=secret
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - CACHE_DRIVER=redis
+      - SESSION_DRIVER=redis
+      - QUEUE_CONNECTION=redis
+      - COMPOSER_ALLOW_SUPERUSER=1
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - pqrs-network
+    restart: unless-stopped
+
+  # ====================================
+  # Base de Datos MySQL
+  # ====================================
+  mysql:
+    image: mysql:8.0
+    container_name: pqrs-mysql-dev
+    environment:
+      MYSQL_ROOT_PASSWORD: root_secret
+      MYSQL_DATABASE: pqrs_db
+      MYSQL_USER: pqrs_user
+      MYSQL_PASSWORD: secret
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
+      timeout: 20s
+      retries: 10
+      interval: 10s
+      start_period: 40s
+    networks:
+      - pqrs-network
+    restart: unless-stopped
+
+  # ====================================
+  # Redis para Cache y Sesiones
+  # ====================================
+  redis:
+    image: redis:7
+    container_name: pqrs-redis-dev
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - pqrs-network
+    restart: unless-stopped
+
+  # ====================================
+  # MailHog para testing de emails
+  # ====================================
+  mailhog:
+    image: axllent/mailpit:latest
+    container_name: pqrs-mailhog-dev
+    ports:
+      - "1025:1025"  # SMTP
+      - "8025:8025"  # Web UI
+    networks:
+      - pqrs-network
+
+# ====================================
+# Volúmenes persistentes
+# ====================================
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+
+# ====================================
+# Red personalizada
+# ====================================
+networks:
+  pqrs-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

@@ -209,6 +209,122 @@ class UserController extends Controller
 
     /**
      * @OA\Get(
+     *     path="/api/users/clients/deleted",
+     *     summary="Get all deleted client users (soft deleted)",
+     *     tags={"Users"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="List of deleted client users",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/User")),
+     *             @OA\Property(property="message", type="string", example="Usuarios clientes eliminados obtenidos exitosamente")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized"
+     *     )
+     * )
+     */
+    public function getDeletedClientUsers()
+    {
+        try {
+            $users = $this->service->getDeletedClientUsers();
+            
+            return response()->json([
+                'success' => true,
+                'data' => $users,
+                'message' => 'Usuarios clientes eliminados obtenidos exitosamente'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener los usuarios clientes eliminados: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/users/clients/all",
+     *     summary="Get all client users (active, inactive and deleted)",
+     *     tags={"Users"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="List of all client users including deleted ones",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="active",
+     *                     type="array",
+     *                     @OA\Items(ref="#/components/schemas/User")
+     *                 ),
+     *                 @OA\Property(
+     *                     property="inactive",
+     *                     type="array",
+     *                     @OA\Items(ref="#/components/schemas/User")
+     *                 ),
+     *                 @OA\Property(
+     *                     property="deleted",
+     *                     type="array",
+     *                     @OA\Items(ref="#/components/schemas/User")
+     *                 ),
+     *                 @OA\Property(property="total", type="integer", example=10)
+     *             ),
+     *             @OA\Property(property="message", type="string", example="Todos los usuarios clientes obtenidos exitosamente")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized"
+     *     )
+     * )
+     */
+    public function getAllClientUsers()
+    {
+        try {
+            $allUsers = $this->service->getAllClientUsers();
+            
+            // Separar usuarios por estado
+            $active = $allUsers->where('status_id', 1)->whereNull('deleted_at')->values();
+            $inactive = $allUsers->where('status_id', '!=', 1)->whereNull('deleted_at')->values();
+            $deleted = $allUsers->whereNotNull('deleted_at')->values();
+            
+            $response = [
+                'active' => $active,
+                'inactive' => $inactive,
+                'deleted' => $deleted,
+                'total' => $allUsers->count(),
+                'counts' => [
+                    'active' => $active->count(),
+                    'inactive' => $inactive->count(),
+                    'deleted' => $deleted->count()
+                ]
+            ];
+            
+            return response()->json([
+                'success' => true,
+                'data' => $response,
+                'message' => 'Todos los usuarios clientes obtenidos exitosamente'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener todos los usuarios clientes: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * @OA\Get(
      *     path="/api/users/{id}",
      *     summary="Get user details",
      *     tags={"Users"},

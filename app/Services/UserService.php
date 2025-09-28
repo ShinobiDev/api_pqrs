@@ -38,7 +38,7 @@ class UserService
     {
         try {
             $hashedPassword = Hash::make($dto->password);
-            
+
             $user = User::create([
                 'user_type_id' => $dto->user_type_id,
                 'name' => $dto->name,
@@ -98,7 +98,7 @@ class UserService
     public function getActiveClientUsers()
     {
         return User::with(['type', 'client', 'documentType', 'role', 'status'])
-            ->where('user_type_id', 7) // Tipo cliente
+            ->where('user_type_id', 10) // Tipo cliente
             ->where('status_id', 1) // Estado activo (asumiendo que 1 = activo)
             ->get();
     }
@@ -106,14 +106,35 @@ class UserService
     public function getInactiveClientUsers()
     {
         return User::with(['type', 'client', 'documentType', 'role', 'status'])
-            ->where('user_type_id', 7) // Tipo cliente
+            ->where('user_type_id', 10) // Tipo cliente
             ->where('status_id', '!=', 1) // Estado diferente a activo
+            ->get();
+    }
+
+    public function getDeletedClientUsers()
+    {
+        return User::onlyTrashed()
+            ->with(['type', 'client', 'documentType', 'role', 'status'])
+            ->where('user_type_id', 10) // Tipo cliente
+            // ->where('status_id', 2) // Estado eliminado
+            ->get();
+    }
+
+    public function getAllClientUsers()
+    {
+        return User::withTrashed()
+            ->with(['type', 'client', 'documentType', 'role', 'status'])
+            ->where('user_type_id', 10) // Tipo cliente
             ->get();
     }
 
     public function destroy(User $user): bool
     {
         try {
+            // Cambiar el status_id a 2 antes del soft delete
+            $user->update(['status_id' => 2]);
+
+            // Realizar el soft delete
             return $user->delete();
         } catch (\Illuminate\Database\QueryException $e) {
             throw new \Exception('Error de base de datos al eliminar el usuario: ' . $e->getMessage(), 0, $e);

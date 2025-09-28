@@ -17,6 +17,7 @@ use App\Http\Controllers\API\FormDataController;
 use App\Http\Controllers\UserFormDataController;
 use App\Http\Controllers\MetricsController;
 use App\Http\Controllers\HealthController;
+use App\Http\Controllers\API\ClientBatchController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -60,11 +61,16 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/users/form-data/client', [FormDataController::class, 'getClientFormData']);
     Route::get('/users/form-data/users', [UserFormDataController::class, 'index']);
 
+    // CLIENT BATCH
+    Route::post('/clients/batch', [ClientBatchController::class, 'createClientWithUsers']);
+
     // USER
     Route::get('/users', [UserController::class, 'index']);
     Route::get('/users/clients', [UserController::class, 'getClientUsers']);
+    Route::get('/users/clients/all', [UserController::class, 'getAllClientUsers']);
     Route::get('/users/clients/active', [UserController::class, 'getActiveClientUsers']);
     Route::get('/users/clients/inactive', [UserController::class, 'getInactiveClientUsers']);
+    Route::get('/users/clients/deleted', [UserController::class, 'getDeletedClientUsers']);
     Route::get('/users/client/{clientId}', [UserController::class, 'getUsersByClient']);
     Route::get('/users/{user}', [UserController::class, 'show']);
     Route::post('/users', [UserController::class, 'store']);

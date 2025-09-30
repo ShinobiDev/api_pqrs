@@ -637,13 +637,127 @@ class UserController extends Controller
     {
         try {
             $includeDeleted = $request->boolean('include_deleted', false);
-            
             return $this->service->exportClients($includeDeleted);
             
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error al exportar los clientes.',
                 'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/users/clients/import",
+     *     summary="Import clients from CSV/Excel file with structure: nombre,tipo_documento,documento,email,phone",
+     *     tags={"Users"},
+     *     security={{"sanctum":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         description="CSV file with columns: nombre,tipo_documento,documento,email,phone. Fixed values: user_type_id=10, role_id=4, status_id=1, client_id=null, random password",
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
+     *                 @OA\Property(
+     *                     property="file",
+     *                     type="string",
+     *                     format="binary",
+     *                     description="CSV or Excel file with client data"
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Import completed successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean"),
+     *             @OA\Property(property="message", type="string"),
+     *             @OA\Property(property="imported_count", type="integer"),
+     *             @OA\Property(property="errors", type="array", @OA\Items(type="string")),
+     *             @OA\Property(property="failures", type="array", @OA\Items(type="object")),
+     *             @OA\Property(property="error_file_url", type="string", description="URL to download Excel file with errors (only if errors exist)")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Invalid file or validation errors",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean"),
+     *             @OA\Property(property="message", type="string"),
+     *             @OA\Property(property="imported_count", type="integer"),
+     *             @OA\Property(property="errors", type="array", @OA\Items(type="string")),
+     *             @OA\Property(property="failures", type="array", @OA\Items(type="object")),
+     *             @OA\Property(property="error_file_url", type="string", description="URL to download Excel file with errors")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Error importing clients"
+     *     )
+     * )
+     */
+    public function importClients(Request $request)
+    {
+        try {
+            // Verificar que se envió un archivo
+            if (!$request->hasFile('file')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se ha enviado ningún archivo',
+                    'errors' => ['file' => ['El archivo es obligatorio']]
+                ], 400);
+            }
+
+            $file = $request->file('file');
+            
+            // Verificar que el archivo es válido
+            if (!$file->isValid()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'El archivo enviado no es válido',
+                    'errors' => ['file' => ['El archivo está corrupto o no se pudo procesar']]
+                ], 400);
+            }
+
+            // Verificar extensión del archivo
+            $allowedExtensions = ['csv', 'xlsx', 'xls'];
+            $extension = strtolower($file->getClientOriginalExtension());
+            
+            if (!in_array($extension, $allowedExtensions)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tipo de archivo no permitido',
+                    'errors' => ['file' => ['El archivo debe ser de tipo: csv, xlsx o xls']]
+                ], 400);
+            }
+
+            // Verificar tamaño del archivo (5MB máximo)
+            $maxSize = 5 * 1024 * 1024; // 5MB en bytes
+            if ($file->getSize() > $maxSize) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Archivo demasiado grande',
+                    'errors' => ['file' => ['El archivo no puede ser mayor a 5MB']]
+                ], 400);
+            }
+            
+            // Procesar la importación
+            $result = $this->service->importClients($file);
+            
+            if ($result['success']) {
+                return response()->json($result, 200);
+            } else {
+                return response()->json($result, 400);
+            }
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al importar los clientes.',
+                'error' => $e->getMessage(),
+                'imported_count' => 0
             ], 500);
         }
     }

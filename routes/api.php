@@ -72,6 +72,7 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/users/clients/inactive', [UserController::class, 'getInactiveClientUsers']);
     Route::get('/users/clients/deleted', [UserController::class, 'getDeletedClientUsers']);
     Route::get('/users/clients/export', [UserController::class, 'exportClients']);
+    Route::post('/users/clients/import', [UserController::class, 'importClients']);
     Route::get('/users/client/{clientId}', [UserController::class, 'getUsersByClient']);
     Route::get('/users/{user}', [UserController::class, 'show']);
     Route::post('/users', [UserController::class, 'store']);

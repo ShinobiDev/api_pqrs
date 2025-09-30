@@ -157,4 +157,110 @@ class UserService
             throw new \Exception('Error al exportar clientes: ' . $e->getMessage(), 0, $e);
         }
     }
+
+    /**
+     * Importa clientes desde un archivo CSV/Excel
+     * @param \Illuminate\Http\UploadedFile $file - Archivo a importar
+     * @return array - Resultado de la importación
+     */
+    public function importClients($file)
+    {
+        try {
+            DB::beginTransaction();
+
+            $import = new \App\Imports\ClientsImport();
+            
+            // Importar el archivo
+            Excel::import($import, $file);
+
+            $successCount = $import->getSuccessCount();
+            $errors = $import->getErrors();
+            $failures = $import->getFailures();
+
+            // Generar archivo de errores si hay fallos
+            $errorFileUrl = null;
+            if (!empty($errors) || !empty($failures)) {
+                $errorFileUrl = $this->generateErrorFile($errors, $failures);
+            }
+
+            // Si hay errores críticos, hacer rollback
+            if (!empty($errors)) {
+                DB::rollback();
+                return [
+                    'success' => false,
+                    'message' => 'Error durante la importación',
+                    'errors' => $errors,
+                    'failures' => $failures,
+                    'imported_count' => 0,
+                    'error_file_url' => $errorFileUrl
+                ];
+            }
+
+            // Si solo hay fallos de validación pero algunos registros se procesaron
+            if (!empty($failures) && $successCount == 0) {
+                DB::rollback();
+                return [
+                    'success' => false,
+                    'message' => 'No se pudo importar ningún registro debido a errores de validación',
+                    'errors' => $errors,
+                    'failures' => $failures,
+                    'imported_count' => 0,
+                    'error_file_url' => $errorFileUrl
+                ];
+            }
+
+            DB::commit();
+
+            $response = [
+                'success' => true,
+                'message' => "Importación completada. {$successCount} clientes importados.",
+                'imported_count' => $successCount,
+                'errors' => $errors,
+                'failures' => $failures
+            ];
+
+            // Si hubo algunos fallos pero también éxitos, incluir el archivo de errores
+            if (!empty($failures)) {
+                $response['error_file_url'] = $errorFileUrl;
+                $response['message'] .= " Se encontraron algunos errores en el archivo.";
+            }
+
+            return $response;
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            throw new \Exception('Error al importar clientes: ' . $e->getMessage(), 0, $e);
+        }
+    }
+
+    /**
+     * Genera un archivo Excel con los errores de importación
+     * @param array $errors - Errores generales
+     * @param array $failures - Errores de validación por fila
+     * @return string - URL del archivo generado
+     */
+    private function generateErrorFile($errors, $failures)
+    {
+        try {
+            $timestamp = date('Y-m-d_H-i-s');
+            $filename = "errores_importacion_{$timestamp}.xlsx";
+            $filepath = "public/import-errors/{$filename}";
+            
+            // Crear directorio si no existe
+            $directory = storage_path('app/public/import-errors');
+            if (!file_exists($directory)) {
+                mkdir($directory, 0755, true);
+            }
+
+            // Generar el archivo Excel con los errores
+            Excel::store(new \App\Exports\ImportErrorsExport($errors, $failures), $filepath);
+
+            // Devolver la URL pública del archivo
+            return url("storage/import-errors/{$filename}");
+
+        } catch (\Exception $e) {
+            // Si no se puede generar el archivo, devolver null
+            return null;
+        }
+    }
 }

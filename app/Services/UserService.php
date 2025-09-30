@@ -7,6 +7,7 @@ use App\DTOs\Users\UserDTO;
 use App\DTOs\Users\EditUserDTO;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 
 class UserService
 {
@@ -140,6 +141,20 @@ class UserService
             throw new \Exception('Error de base de datos al eliminar el usuario: ' . $e->getMessage(), 0, $e);
         } catch (\Exception $e) {
             throw new \Exception('Ocurrió un error inesperado al eliminar el usuario: ' . $e->getMessage(), 0, $e);
+        }
+    }
+
+    /**
+     * Exporta los clientes en formato Excel
+     * @param bool $includeDeleted - Incluir clientes eliminados
+     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
+     */
+    public function exportClients($includeDeleted = false)
+    {
+        try {
+            return Excel::download(new \App\Exports\ClientsExport($includeDeleted), 'clientes_' . date('Y-m-d_H-i-s') . '.xlsx');
+        } catch (\Exception $e) {
+            throw new \Exception('Error al exportar clientes: ' . $e->getMessage(), 0, $e);
         }
     }
 }

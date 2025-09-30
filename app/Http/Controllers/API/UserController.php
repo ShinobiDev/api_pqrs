@@ -606,4 +606,45 @@ class UserController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * @OA\Get(
+     *     path="/api/users/clients/export",
+     *     summary="Export clients to Excel",
+     *     tags={"Users"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="include_deleted",
+     *         in="query",
+     *         description="Include deleted clients in export",
+     *         required=false,
+     *         @OA\Schema(type="boolean")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Excel file download",
+     *         @OA\MediaType(
+     *             mediaType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Error exporting clients"
+     *     )
+     * )
+     */
+    public function exportClients(Request $request)
+    {
+        try {
+            $includeDeleted = $request->boolean('include_deleted', false);
+            
+            return $this->service->exportClients($includeDeleted);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al exportar los clientes.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

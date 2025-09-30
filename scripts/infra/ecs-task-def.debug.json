@@ -20,7 +20,7 @@
 
                                                      ],
                                      "essential":  true,
-                                     "image":  "025066262373.dkr.ecr.us-east-1.amazonaws.com/pqrs-api:fixdocs2",
+                                     "image":  "025066262373.dkr.ecr.us-east-1.amazonaws.com/pqrs-api:fixdocs4",
                                      "portMappings":  [
                                                           {
                                                               "protocol":  "tcp",

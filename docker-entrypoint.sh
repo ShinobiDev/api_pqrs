@@ -30,7 +30,34 @@ if [ -f .env ]; then
       echo "APP_KEY=$APP_KEY" >> .env.tmp
       mv .env.tmp .env
     elif [ -n "$APP_KEY_LINE" ]; then
-      echo "[entrypoint] Using APP_KEY found in .env for production"
+      # If the APP_KEY in .env looks like a placeholder (e.g. contains YOUR_ or base64:YOUR_...),
+      # treat it as not valid and generate a runtime key only as a last-resort fallback so the
+      # application doesn't crash with an unsupported cipher error. Prefer an explicit APP_KEY
+      # provided via environment in production; auto-generation here is a pragmatic fallback.
+      echo "$APP_KEY_LINE" | grep -q 'YOUR_' 2>/dev/null
+      if [ $? -eq 0 ]; then
+        if [ -n "$APP_KEY" ]; then
+          echo "[entrypoint] Using APP_KEY provided in environment for production"
+          grep -v '^APP_KEY=' .env > .env.tmp || true
+          echo "APP_KEY=$APP_KEY" >> .env.tmp
+          mv .env.tmp .env
+        else
+          echo "[entrypoint] WARNING: APP_KEY in .env appears to be a placeholder; generating a temporary APP_KEY for startup"
+          NEW_KEY=$(php -r "echo 'base64:'.base64_encode(random_bytes(32));") || NEW_KEY=""
+          if [ -n "$NEW_KEY" ]; then
+            grep -v '^APP_KEY=' .env > .env.tmp || true
+            echo "APP_KEY=$NEW_KEY" >> .env.tmp
+            mv .env.tmp .env
+            # Export so subprocesses / php can read it from environment too
+            export APP_KEY="$NEW_KEY"
+          else
+            echo "[entrypoint] ERROR: failed to generate APP_KEY and no valid APP_KEY provided"
+            exit 1
+          fi
+        fi
+      else
+        echo "[entrypoint] Using APP_KEY found in .env for production"
+      fi
     else
       echo "[entrypoint] ERROR: APP_KEY is required in production. Set APP_KEY as an environment variable or in .env.docker.prod"
       exit 1
@@ -82,8 +109,50 @@ foreach ($lines as $line) {
 file_put_contents($path, implode(PHP_EOL, $out).PHP_EOL);
 PHP
   fi
+  # If Redis is not configured or not reachable, switch to file drivers BEFORE running any artisan commands
+  # so that cache:clear / optimize:clear do not attempt to connect to Redis and fail startup.
+  REDIS_HOST=${REDIS_HOST:-$(grep '^REDIS_HOST=' .env 2>/dev/null | cut -d'=' -f2 || true)}
+  REDIS_PORT=${REDIS_PORT:-$(grep '^REDIS_PORT=' .env 2>/dev/null | cut -d'=' -f2 || echo 6379)}
+  placeholder=0
+  case "$REDIS_HOST" in
+    *'${'*) placeholder=1 ;;
+    *) placeholder=0 ;;
+  esac
+  if [ -z "$REDIS_HOST" ] || [ "$placeholder" -eq 1 ]; then
+    echo "[entrypoint] Redis not configured or placeholder detected; switching cache/session/queue to file/sync drivers before artisan commands"
+    grep -v '^CACHE_DRIVER=' .env > .env.tmp || true
+    echo "CACHE_DRIVER=file" >> .env.tmp
+    grep -v '^SESSION_DRIVER=' .env.tmp > .env.tmp2 || true
+    echo "SESSION_DRIVER=file" >> .env.tmp2
+    grep -v '^QUEUE_CONNECTION=' .env.tmp2 > .env.tmp || true
+    echo "QUEUE_CONNECTION=sync" >> .env.tmp
+    mv .env.tmp .env
+    export CACHE_DRIVER=file
+    export SESSION_DRIVER=file
+    export QUEUE_CONNECTION=sync
+  else
+    # Try opening a TCP connection to REDIS_HOST:REDIS_PORT using PHP; timeout 1s
+    if command -v php >/dev/null 2>&1; then
+      php -r "\$h=getenv('REDIS_HOST')?:'${REDIS_HOST}'; \$p=getenv('REDIS_PORT')?:'${REDIS_PORT}'; \$s=@fsockopen(\$h, (int)\$p, \$e, \$err, 1); if(\$s){ fclose(\$s); exit(0);} exit(1);" >/dev/null 2>&1
+      if [ $? -ne 0 ]; then
+        echo "[entrypoint] Redis ${REDIS_HOST}:${REDIS_PORT} unreachable; switching cache/session/queue to file/sync drivers before artisan commands"
+        grep -v '^CACHE_DRIVER=' .env > .env.tmp || true
+        echo "CACHE_DRIVER=file" >> .env.tmp
+        grep -v '^SESSION_DRIVER=' .env.tmp > .env.tmp2 || true
+        echo "SESSION_DRIVER=file" >> .env.tmp2
+        grep -v '^QUEUE_CONNECTION=' .env.tmp2 > .env.tmp || true
+        echo "QUEUE_CONNECTION=sync" >> .env.tmp
+        mv .env.tmp .env
+        export CACHE_DRIVER=file
+        export SESSION_DRIVER=file
+        export QUEUE_CONNECTION=sync
+      else
+        echo "[entrypoint] Redis ${REDIS_HOST}:${REDIS_PORT} reachable; keeping configured drivers"
+      fi
+    fi
+  fi
 
-  # Clear Laravel config and views to pick up new APP_KEY (avoid cache:clear which may touch Redis)
+  # Clear Laravel config and views to pick up new APP_KEY (now that drivers are fixed)
   if command -v php >/dev/null 2>&1 && [ -f artisan ]; then
     echo "[entrypoint] Clearing Laravel config, views and compiled caches to pick up new APP_KEY"
     # optimize:clear will clear compiled, route, config and other caches that may include serialized closures

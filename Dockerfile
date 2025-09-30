@@ -194,16 +194,20 @@ RUN chown -R www:www /var/www || true
 RUN chmod -R g+rwX /var/www || true
 
 # Optimizar aplicación para producción
+# NOTE: We do not want to ship a pre-cached config.php that contains
+# environment placeholders (e.g. ${DB_HOST}, ${REDIS_HOST}) because the
+# real values are provided at container runtime. Some CI/build flows
+# attempted to run artisan config:cache at build time which bakes those
+# placeholders into bootstrap/cache/config.php and causes runtime 500
+# errors. Keep the build-time diagnostics but remove any generated
+# config cache so the container will resolve configuration from the
+# runtime-expanded .env and the entrypoint can safely run cache commands.
 RUN if [ -f artisan ]; then \
-          echo "-- PHP version and loaded modules --" && php -v && php -m || true; \
-          echo "-- Basic runtime bootstrap diagnostic --" && php -r "require 'vendor/autoload.php';\$app=require 'bootstrap/app.php'; if (method_exists(\$app, 'environmentFilePath')) { echo 'ENV_FILE: '.\$app->environmentFilePath().PHP_EOL; } echo 'APP_ENV: '.\$app->environment().PHP_EOL;" || true; \
-          # Ensure APP_KEY exists for config caching; generate if missing (non-fatal)
-          php -r "if (!file_exists('.env') || !preg_match('/^APP_KEY=.+/m', file_get_contents('.env'))) { \$k='base64:'.base64_encode(random_bytes(32)); if (file_exists('.env')) { file_put_contents('.env', preg_replace('/^APP_KEY=.*$/m', '', trim(file_get_contents('.env'))).PHP_EOL.'APP_KEY=' . \$k . PHP_EOL); } else { file_put_contents('.env', 'APP_KEY=' . \$k . PHP_EOL); } }" || true; \
-          echo "-- APP_KEY presence (not exposing value) --" && php -r "require 'vendor/autoload.php'; \$app=require 'bootstrap/app.php'; \$kernel=\$app->make(Illuminate\\Contracts\\Console\\Kernel::class); \$kernel->bootstrap(); echo 'CONFIG APP_KEY set: ', (config('app.key') ? 'yes' : 'no'), PHP_EOL;" || true; \
-          echo "-- Running artisan cache commands (errors will not break the build) --"; \
-          php artisan config:cache || echo 'php artisan config:cache failed' ; \
-          php artisan route:cache || echo 'php artisan route:cache failed' ; \
-          php artisan view:cache || echo 'php artisan view:cache failed' ; \
+        echo "-- PHP version and loaded modules --" && php -v && php -m || true; \
+        echo "-- Basic runtime bootstrap diagnostic --" && php -r "require 'vendor/autoload.php';$app=require 'bootstrap/app.php'; if (method_exists($app, 'environmentFilePath')) { echo 'ENV_FILE: '. $app->environmentFilePath().PHP_EOL; } echo 'APP_ENV: '. $app->environment().PHP_EOL;" || true; \
+        # Do NOT cache config at build time. If any config cache files were
+        # created earlier in the pipeline, remove them so runtime uses .env
+        rm -f bootstrap/cache/config.php || true; \
     fi
 
 # Cambiar a usuario sin privilegios

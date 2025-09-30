@@ -1,0 +1,530 @@
+﻿{
+    "services": [
+        {
+            "serviceArn": "arn:aws:ecs:us-east-1:025066262373:service/pqrs-cluster/pqrs-service",
+            "serviceName": "pqrs-service",
+            "clusterArn": "arn:aws:ecs:us-east-1:025066262373:cluster/pqrs-cluster",
+            "loadBalancers": [],
+            "serviceRegistries": [],
+            "status": "ACTIVE",
+            "desiredCount": 1,
+            "runningCount": 1,
+            "pendingCount": 0,
+            "launchType": "FARGATE",
+            "platformVersion": "LATEST",
+            "platformFamily": "Linux",
+            "taskDefinition": "arn:aws:ecs:us-east-1:025066262373:task-definition/pqrs-task:12",
+            "deploymentConfiguration": {
+                "deploymentCircuitBreaker": {
+                    "enable": false,
+                    "rollback": false
+                },
+                "maximumPercent": 200,
+                "minimumHealthyPercent": 100
+            },
+            "deployments": [
+                {
+                    "id": "ecs-svc/9812728153542119044",
+                    "status": "PRIMARY",
+                    "taskDefinition": "arn:aws:ecs:us-east-1:025066262373:task-definition/pqrs-task:12",
+                    "desiredCount": 0,
+                    "pendingCount": 0,
+                    "runningCount": 0,
+                    "failedTasks": 0,
+                    "createdAt": "2025-09-28T18:23:34.409000-05:00",
+                    "updatedAt": "2025-09-28T18:23:46.640000-05:00",
+                    "launchType": "FARGATE",
+                    "platformVersion": "1.4.0",
+                    "platformFamily": "Linux",
+                    "networkConfiguration": {
+                        "awsvpcConfiguration": {
+                            "subnets": [
+                                "subnet-0931519199771cb12"
+                            ],
+                            "securityGroups": [
+                                "sg-00ce3c99e3a164ea5"
+                            ],
+                            "assignPublicIp": "ENABLED"
+                        }
+                    },
+                    "rolloutState": "IN_PROGRESS",
+                    "rolloutStateReason": "ECS deployment ecs-svc/9812728153542119044 in progress."
+                },
+                {
+                    "id": "ecs-svc/3749206032668722798",
+                    "status": "ACTIVE",
+                    "taskDefinition": "arn:aws:ecs:us-east-1:025066262373:task-definition/pqrs-task:11",
+                    "desiredCount": 1,
+                    "pendingCount": 0,
+                    "runningCount": 1,
+                    "failedTasks": 0,
+                    "createdAt": "2025-09-28T18:05:36.183000-05:00",
+                    "updatedAt": "2025-09-28T18:23:46.600000-05:00",
+                    "launchType": "FARGATE",
+                    "platformVersion": "1.4.0",
+                    "platformFamily": "Linux",
+                    "networkConfiguration": {
+                        "awsvpcConfiguration": {
+                            "subnets": [
+                                "subnet-0931519199771cb12"
+                            ],
+                            "securityGroups": [
+                                "sg-00ce3c99e3a164ea5"
+                            ],
+                            "assignPublicIp": "ENABLED"
+                        }
+                    },
+                    "rolloutState": "COMPLETED",
+                    "rolloutStateReason": "ECS deployment ecs-svc/3749206032668722798 completed."
+                }
+            ],
+            "roleArn": "arn:aws:iam::025066262373:role/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS",
+            "events": [
+                {
+                    "id": "8a2bd0df-0a03-421a-a37a-2db16f5e1b0b",
+                    "createdAt": "2025-09-28T18:08:14.435000-05:00",
+                    "message": "(service pqrs-service) has reached a steady state."
+                },
+                {
+                    "id": "3cb973db-730d-4132-8dd3-5f85635ed2d6",
+                    "createdAt": "2025-09-28T18:08:14.434000-05:00",
+                    "message": "(service pqrs-service) (deployment ecs-svc/3749206032668722798) deployment completed."
+                },
+                {
+                    "id": "61ab712c-737d-4597-8c62-7227f47dbf8b",
+                    "createdAt": "2025-09-28T18:07:02.512000-05:00",
+                    "message": "(service pqrs-service) has stopped 1 running tasks: (task 63ff4f318a624081afe971050c510fb4)."
+                },
+                {
+                    "id": "17948f1e-a2d7-4778-bd08-f301863fd3f9",
+                    "createdAt": "2025-09-28T18:05:50.946000-05:00",
+                    "message": "(service pqrs-service) has started 1 tasks: (task f096811d0760478584653653f55564f8)."
+                },
+                {
+                    "id": "882c95b8-8466-4909-bab1-3307d1f43ef2",
+                    "createdAt": "2025-09-28T17:53:09.281000-05:00",
+                    "message": "(service pqrs-service) has reached a steady state."
+                },
+                {
+                    "id": "f3a4df38-d2db-4efb-8317-e3bc6d0b1a55",
+                    "createdAt": "2025-09-28T17:53:09.280000-05:00",
+                    "message": "(service pqrs-service) (deployment ecs-svc/3213818380013104132) deployment completed."
+                },
+                {
+                    "id": "64decf68-06ac-49da-adfb-38010c76698f",
+                    "createdAt": "2025-09-28T17:51:47.544000-05:00",
+                    "message": "(service pqrs-service) has started 1 tasks: (task 63ff4f318a624081afe971050c510fb4)."
+                },
+                {
+                    "id": "7051c6fa-61b7-40ff-bcbc-0e40ce484d0e",
+                    "createdAt": "2025-09-28T17:50:54.617000-05:00",
+                    "message": "(service pqrs-service) was unable to place a task. Reason: CannotPullContainerError: ref pull has been retried 1 time(s): failed to resolve reference \"025066262373.dkr.ecr.us-east-1.amazonaws.com/pqrs-api:mytag@sha256:d293da215835606c8c5d67a393ec240b1d5dd8742fc24fb559f4778ee2175b3e\": 025066262373.dkr.ecr.us-east-1.amazonaws.com/pqrs-api:mytag@sha256:d293da215835606c8c5d67a393ec240b1d5dd8742fc24fb559f4778ee2175b3e: not found."
+                },
+                {
+                    "id": "5b2fcb3e-89bc-4de2-9989-a376f10ac509",
+                    "createdAt": "2025-09-28T17:49:55.912000-05:00",
+                    "message": "(service pqrs-service) has started 1 tasks: (task 1bc00b6c5270423cad528e3ae33a7640)."
+                },
+                {
+                    "id": "eaf00a7b-52f8-4f90-a4f6-9b8bba88d897",
+                    "createdAt": "2025-09-28T17:48:51.935000-05:00",
+                    "message": "(service pqrs-service) has started 1 tasks: (task ed91e1164093468c874a0b8e49084627)."
+                },
+                {
+                    "id": "0248845d-8422-4b46-8a76-931b90c705d5",
+                    "createdAt": "2025-09-28T17:47:40.134000-05:00",
+                    "message": "(service pqrs-service) has started 1 tasks: (task ad71e9071697448688caef0d7c3c9243)."
+                },
+                {
+                    "id": "7928c650-ac3d-4a06-a1d7-b2246012e84c",
+                    "createdAt": "2025-09-28T17:46:28.354000-05:00",
+                    "message": "(service pqrs-service) has started 1 tasks: (task c6116b8c23df4318ac6c3922f8b7d623)."
+                },
+                {
+                    "id": "a75c355f-206b-43f4-844c-422054416c56",
+                    "createdAt": "2025-09-28T17:46:04.556000-05:00",
+                    "message": "(service pqrs-service) has reached a steady state."
+                },
+                {
+                    "id": "b34cce3a-410a-46c3-8a00-cadef17c7c49",
+                    "createdAt": "2025-09-28T17:45:36.745000-05:00",
+                    "message": "(service pqrs-service) has started 1 tasks: (task 219e4597d09f4337baf48ef8c5b29ad0)."
+                },
+                {
+                    "id": "f80972be-dcf3-4624-9d09-e19d8a904061",
+                    "createdAt": "2025-09-28T17:44:57.147000-05:00",
+                    "message": "(service pqrs-service) has started 1 tasks: (task 3016651603484723a44cc69972152dc7)."
+                },
+                {
+                    "id": "c2ec6c85-1299-4c11-83e8-ada4379ef31b",
+                    "createdAt": "2025-09-28T17:44:24.909000-05:00",
+                    "message": "(service pqrs-service) has reached a steady state."
+                },
+                {
+                    "id": "7cdeb47b-5f4a-411b-b959-377fc3685e6d",
+                    "createdAt": "2025-09-28T17:43:54.993000-05:00",
+                    "message": "(service pqrs-service) has started 1 tasks: (task b4bbe7046d3548b29eb0d9fdd37adb64)."
+                },
+                {
+                    "id": "397ecb17-a011-4482-809d-14a0d9a2c5ed",
+                    "createdAt": "2025-09-28T17:43:23.964000-05:00",
+                    "message": "(service pqrs-service) has reached a steady state."
+                },
+                {
+                    "id": "46803869-d525-4f12-8a0c-c1e46c32ea30",
+                    "createdAt": "2025-09-28T17:42:54.473000-05:00",
+                    "message": "(service pqrs-service) has started 1 tasks: (task 346aa3c4a1724abebea5d2a47a0cea55)."
+                },
+                {
+                    "id": "6420105e-be79-478d-8f4f-0e92c3d4f043",
+                    "createdAt": "2025-09-28T17:42:22.792000-05:00",
+                    "message": "(service pqrs-service) has reached a steady state."
+                },
+                {
+                    "id": "2dfe2726-de24-4547-b7cd-77539cdba3ef",
+                    "createdAt": "2025-09-28T17:41:42.897000-05:00",
+                    "message": "(service pqrs-service) has started 1 tasks: (task 0e5e89b5ab2544479931caeed817df4f)."
+                },
+                {
+                    "id": "00bdf080-47a6-473f-9665-ae54dcd3985f",
+                    "createdAt": "2025-09-28T17:41:12.146000-05:00",
+                    "message": "(service pqrs-service) has reached a steady state."
+                },
+                {
+                    "id": "6e9d5799-05ef-4194-98dd-c8ef33bb9381",
+                    "createdAt": "2025-09-28T17:40:34.305000-05:00",
+                    "message": "(service pqrs-service) has started 1 tasks: (task 6710fa446f8d4664bca62c3556a5f0d2)."
+                },
+                {
+                    "id": "de833f6e-a21a-4f2d-9330-c78acdc7e6c9",
+                    "createdAt": "2025-09-28T17:40:01.298000-05:00",
+                    "message": "(service pqrs-service) has reached a steady state."
+                },
+                {
+                    "id": "6eac248d-01a7-43a1-b802-01e9c98d129a",
+                    "createdAt": "2025-09-28T17:39:31.839000-05:00",
+                    "message": "(service pqrs-service) has started 1 tasks: (task 9b35ea09a68446688c5c8fb298040847)."
+                },
+                {
+                    "id": "683af2d8-a26e-477d-a930-b90e6644cdd7",
+                    "createdAt": "2025-09-28T17:39:00.386000-05:00",
+                    "message": "(service pqrs-service) has reached a steady state."
+                },
+                {
+                    "id": "d79fb0fa-4c66-4eac-9af4-bae951ef428b",
+                    "createdAt": "2025-09-28T17:38:31.760000-05:00",
+                    "message": "(service pqrs-service) has started 1 tasks: (task 5463c1fb7ff345d1a24d46b33e61b90b)."
+                },
+                {
+                    "id": "8632a036-1eac-4c7e-b614-7a7de614e038",
+                    "createdAt": "2025-09-28T17:37:59.073000-05:00",
+                    "message": "(service pqrs-service) has reached a steady state."
+                },
+                {
+                    "id": "7d2f7450-6a69-49fc-accb-d1ecabc35fbb",
+                    "createdAt": "2025-09-28T17:37:28.063000-05:00",
+                    "message": "(service pqrs-service) has started 1 tasks: (task 6bbae67c334745f48eeffcb1f607521f)."
+                },
+                {
+                    "id": "c072829c-6ba4-404c-8166-ff5dddb857cc",
+                    "createdAt": "2025-09-28T17:36:57.230000-05:00",
+                    "message": "(service pqrs-service) has reached a steady state."
+                },
+                {
+                    "id": "5bc343fe-979f-409b-946d-9e5df5851771",
+                    "createdAt": "2025-09-28T17:36:28.362000-05:00",
+                    "message": "(service pqrs-service) has started 1 tasks: (task 71ddf61598eb43908b209d341fa8db66)."
+                },
+                {
+                    "id": "ad2bba4b-b4b0-4499-85a0-4edd2c0cccbb",
+                    "createdAt": "2025-09-28T17:35:55.085000-05:00",
+                    "message": "(service pqrs-service) has reached a steady state."
+                },
+                {
+                    "id": "9d1f92ae-988d-48ae-98f9-113fd454723b",
+                    "createdAt": "2025-09-28T17:35:26.746000-05:00",
+                    "message": "(service pqrs-service) has started 1 tasks: (task a00dd9276b8c4164adcd087496048e3c)."
+                },
+                {
+                    "id": "5a5e40fd-485b-4a6f-94c7-bc49fcff6356",
+                    "createdAt": "2025-09-28T17:34:55.920000-05:00",
+                    "message": "(service pqrs-service) has reached a steady state."
+                },
+                {
+                    "id": "4ed9d193-7f79-4db1-a4e4-cd9059ad0956",
+                    "createdAt": "2025-09-28T17:34:26.159000-05:00",
+                    "message": "(service pqrs-service) has started 1 tasks: (task 4b3d4317fa6c4175b28f640966a0a58d)."
+                },
+                {
+                    "id": "a7ed7317-686c-4f31-85e4-3dd5ab0506f6",
+                    "createdAt": "2025-09-28T17:33:53.378000-05:00",
+                    "message": "(service pqrs-service) has reached a steady state."
+                },
+                {
+                    "id": "b5b88c18-ef9f-446d-aa2e-ff19bf46733d",
+                    "createdAt": "2025-09-28T17:33:24.586000-05:00",
+                    "message": "(service pqrs-service) has started 1 tasks: (task d9efe4f65a934679b8b844a8674eb3b0)."
+                },
+                {
+                    "id": "a1ca10dc-0209-4189-9efe-8e032f71e402",
+                    "createdAt": "2025-09-28T17:32:53.730000-05:00",
+                    "message": "(service pqrs-service) has reached a steady state."
+                },
+                {
+                    "id": "ed247530-22a7-40c0-9ac9-c054cfbd253e",
+                    "createdAt": "2025-09-28T17:32:23.783000-05:00",
+                    "message": "(service pqrs-service) has started 1 tasks: (task 9fc114ce4fc04d98bc97c6304bd3c447)."
+                },
+                {
+                    "id": "d4a9303d-e80d-4f44-85d9-182dc63e3e05",
+                    "createdAt": "2025-09-28T17:31:53.039000-05:00",
+                    "message": "(service pqrs-service) has reached a steady state."
+                },
+                {
+                    "id": "53ffa599-149d-406f-a606-0f7e4cf9359f",
+                    "createdAt": "2025-09-28T17:30:53.014000-05:00",
+                    "message": "(service pqrs-service) has started 1 tasks: (task 00ecb16a7f9d45f2bfed0f7d6b090d2a)."
+                },
+                {
+                    "id": "3202a313-0529-4c79-bf2a-3cf40b39e15b",
+                    "createdAt": "2025-09-28T17:30:22.516000-05:00",
+                    "message": "(service pqrs-service) has reached a steady state."
+                },
+                {
+                    "id": "a9b4f1e0-972d-4fa1-abd9-9a077d4ed50e",
+                    "createdAt": "2025-09-28T17:29:41.907000-05:00",
+                    "message": "(service pqrs-service) has started 1 tasks: (task 80b0e78299504985b79e78631010a03d)."
+                },
+                {
+                    "id": "69dfe7ae-d5f2-4eea-89d0-a8e28a338316",
+                    "createdAt": "2025-09-28T17:29:09.272000-05:00",
+                    "message": "(service pqrs-service) has reached a steady state."
+                },
+                {
+                    "id": "a650e596-ff29-41b0-8109-5cd702f37f7d",
+                    "createdAt": "2025-09-28T17:29:09.271000-05:00",
+                    "message": "(service pqrs-service) (deployment ecs-svc/2072958160564511671) deployment completed."
+                },
+                {
+                    "id": "16396874-031e-4a9b-badc-4c9087209c7b",
+                    "createdAt": "2025-09-28T17:28:38.491000-05:00",
+                    "message": "(service pqrs-service) has started 1 tasks: (task 67dd3d392f37419f87d17b122dd3c119)."
+                },
+                {
+                    "id": "32b87aa9-7c77-45f7-bb28-44a7f899f5f8",
+                    "createdAt": "2025-09-28T17:27:57.331000-05:00",
+                    "message": "(service pqrs-service) has started 1 tasks: (task d04393c5c2ef494fb0156283d6c72b35)."
+                },
+                {
+                    "id": "4205bfa4-b814-4823-87f9-e3bb0168dc68",
+                    "createdAt": "2025-09-28T17:27:08.041000-05:00",
+                    "message": "(service pqrs-service) has started 1 tasks: (task b6e8b2d2c04b4dc4a315c15930769a1b)."
+                },
+                {
+                    "id": "2f8f5238-f590-4f3a-bcd8-980eecbe939e",
+                    "createdAt": "2025-09-28T17:26:34.887000-05:00",
+                    "message": "(service pqrs-service) has reached a steady state."
+                },
+                {
+                    "id": "df2317f6-7876-47a4-baf4-a7f7f79f81da",
+                    "createdAt": "2025-09-28T17:26:04.409000-05:00",
+                    "message": "(service pqrs-service) has started 1 tasks: (task 29232a4bb3744c228623bdc342afcc17)."
+                },
+                {
+                    "id": "63f0a933-1efc-4af6-85ba-1e905145fca6",
+                    "createdAt": "2025-09-28T17:25:31.529000-05:00",
+                    "message": "(service pqrs-service) has reached a steady state."
+                },
+                {
+                    "id": "df64ade7-ca9d-48c7-82a1-517d4ef1bc19",
+                    "createdAt": "2025-09-28T17:24:52.395000-05:00",
+                    "message": "(service pqrs-service) has started 1 tasks: (task c2767e9937ac498d9f940aa728048b79)."
+                },
+                {
+                    "id": "288637b1-1167-4e24-9a3e-b41782dc385f",
+                    "createdAt": "2025-09-28T17:24:20.942000-05:00",
+                    "message": "(service pqrs-service) has reached a steady state."
+                },
+                {
+                    "id": "a6fc9b8a-6ffa-4094-a1bf-64d67b2ac407",
+                    "createdAt": "2025-09-28T17:23:51.641000-05:00",
+                    "message": "(service pqrs-service) has started 1 tasks: (task 41ff2e9ae53b4c87af05b1da04fcbb55)."
+                },
+                {
+                    "id": "3068cc75-32c3-4a3a-a401-215259721b71",
+                    "createdAt": "2025-09-28T17:23:20.936000-05:00",
+                    "message": "(service pqrs-service) has reached a steady state."
+                },
+                {
+                    "id": "0c57d260-dd5c-40d3-be8c-303b8fc492c7",
+                    "createdAt": "2025-09-28T17:22:39.857000-05:00",
+                    "message": "(service pqrs-service) has started 1 tasks: (task 16e2ea9033574323b732b27bfdd2fb34)."
+                },
+                {
+                    "id": "4a6ecdac-f425-4696-aea9-ac4e55243585",
+                    "createdAt": "2025-09-28T17:22:07.911000-05:00",
+                    "message": "(service pqrs-service) has reached a steady state."
+                },
+                {
+                    "id": "9f9302ba-6220-4ebd-8647-19e4f900d333",
+                    "createdAt": "2025-09-28T17:21:38.379000-05:00",
+                    "message": "(service pqrs-service) has started 1 tasks: (task cb2a5e99b2e34f6bafdb8f6a32fc2e65)."
+                },
+                {
+                    "id": "d085c458-f824-4cb3-a6cf-44dc04fce6d2",
+                    "createdAt": "2025-09-28T17:21:04.539000-05:00",
+                    "message": "(service pqrs-service) has reached a steady state."
+                },
+                {
+                    "id": "43834b75-ffba-4905-a222-0b739b81b8a8",
+                    "createdAt": "2025-09-28T17:20:35.452000-05:00",
+                    "message": "(service pqrs-service) has started 1 tasks: (task 1a1a8369953b4a07aa8c3c9ddfd89cea)."
+                },
+                {
+                    "id": "f11122e8-5c88-4406-92a5-373a2b5cf06e",
+                    "createdAt": "2025-09-28T17:20:02.903000-05:00",
+                    "message": "(service pqrs-service) has reached a steady state."
+                },
+                {
+                    "id": "e6a6c707-4b3f-4867-88cb-2bb7831a13f1",
+                    "createdAt": "2025-09-28T17:19:33.923000-05:00",
+                    "message": "(service pqrs-service) has started 1 tasks: (task e2cac43682ee47c0a9df008f24691c48)."
+                },
+                {
+                    "id": "8acba932-08b0-4118-af44-44fe21956665",
+                    "createdAt": "2025-09-28T17:19:02.763000-05:00",
+                    "message": "(service pqrs-service) has reached a steady state."
+                },
+                {
+                    "id": "b5d2d1e4-78ce-46cd-824a-a32e14871e47",
+                    "createdAt": "2025-09-28T17:18:03.754000-05:00",
+                    "message": "(service pqrs-service) has started 1 tasks: (task d0783b0cd1964acbacec72badf2b1a0b)."
+                },
+                {
+                    "id": "b7640e5a-bdd1-4c47-9f0e-938e73cc8b9a",
+                    "createdAt": "2025-09-28T17:17:33.108000-05:00",
+                    "message": "(service pqrs-service) has reached a steady state."
+                },
+                {
+                    "id": "6654aa6a-b74b-499c-8b6e-a7e9ba6e9011",
+                    "createdAt": "2025-09-28T17:17:05.040000-05:00",
+                    "message": "(service pqrs-service) has started 1 tasks: (task 098c8c303f5a472f8760c506c5aa5791)."
+                },
+                {
+                    "id": "85f66ea3-5f46-487f-8695-2d4f360948e9",
+                    "createdAt": "2025-09-28T17:16:34.816000-05:00",
+                    "message": "(service pqrs-service) has reached a steady state."
+                },
+                {
+                    "id": "b5e6d852-e419-4727-871f-ae2044524c47",
+                    "createdAt": "2025-09-28T17:16:04.572000-05:00",
+                    "message": "(service pqrs-service) has started 1 tasks: (task 4b3c904b828e4dc188664646ae0ccce7)."
+                },
+                {
+                    "id": "11a49c40-7517-4367-9445-50abce50d2f1",
+                    "createdAt": "2025-09-28T17:15:33.730000-05:00",
+                    "message": "(service pqrs-service) has reached a steady state."
+                },
+                {
+                    "id": "1c80bf9c-002b-4aee-af50-c2943044404d",
+                    "createdAt": "2025-09-28T17:15:05.585000-05:00",
+                    "message": "(service pqrs-service) has started 1 tasks: (task ef3ad25bac4c4c7fa0a14a38425953d2)."
+                },
+                {
+                    "id": "fbd233fb-900b-4b3e-9a2d-106a35607384",
+                    "createdAt": "2025-09-28T17:14:34.443000-05:00",
+                    "message": "(service pqrs-service) has reached a steady state."
+                },
+                {
+                    "id": "9d67accf-30bb-492e-83f2-bf6d15e64dc0",
+                    "createdAt": "2025-09-28T17:14:34.442000-05:00",
+                    "message": "(service pqrs-service) (deployment ecs-svc/2473988520085170612) deployment completed."
+                },
+                {
+                    "id": "7a40eb8b-8c79-41ae-a4b2-61417b320eb1",
+                    "createdAt": "2025-09-28T17:14:03.337000-05:00",
+                    "message": "(service pqrs-service) has started 1 tasks: (task 92e01c9f8f91490687f8cb53c95e6d71)."
+                },
+                {
+                    "id": "f8e59ac3-f2ea-4d11-8e88-e1ace6e48630",
+                    "createdAt": "2025-09-28T17:13:21.561000-05:00",
+                    "message": "(service pqrs-service) has started 1 tasks: (task 2637b6176f2c4c278416b2829d51c0d3)."
+                },
+                {
+                    "id": "2829f048-46c4-4373-8e8c-923ca9293cf9",
+                    "createdAt": "2025-09-28T17:12:20.750000-05:00",
+                    "message": "(service pqrs-service) has started 1 tasks: (task e9c7901853b4442381900bcded15a8b9)."
+                },
+                {
+                    "id": "68ea1b84-f06f-43b7-afd9-94056b580a12",
+                    "createdAt": "2025-09-28T17:11:38.087000-05:00",
+                    "message": "(service pqrs-service) has reached a steady state."
+                },
+                {
+                    "id": "11078d71-c873-4d45-9985-c326b0078307",
+                    "createdAt": "2025-09-28T17:11:38.086000-05:00",
+                    "message": "(service pqrs-service) (deployment ecs-svc/0513572067968957267) deployment completed."
+                },
+                {
+                    "id": "68958d0a-af5d-4335-8700-fca07a7e90ff",
+                    "createdAt": "2025-09-28T17:11:08.419000-05:00",
+                    "message": "(service pqrs-service) has started 1 tasks: (task f6cbba79152540709c49238a2af7d212)."
+                },
+                {
+                    "id": "7ea57b46-7029-441a-a11a-371059fa7961",
+                    "createdAt": "2025-09-28T17:10:48.016000-05:00",
+                    "message": "(service pqrs-service) was unable to place a task. Reason: ResourceInitializationError: failed to validate logger args: create stream has been retried 1 times: failed to create Cloudwatch log stream: ResourceNotFoundException: The specified log group does not exist. : exit status 1."
+                },
+                {
+                    "id": "6e74d617-3976-45ce-ac91-cd36271a24ed",
+                    "createdAt": "2025-09-28T17:10:17.994000-05:00",
+                    "message": "(service pqrs-service) has started 1 tasks: (task 71599bf4014144ac9a19a44ec59458dd)."
+                },
+                {
+                    "id": "89099d48-76d7-4f70-92e8-bbd2cdc4b705",
+                    "createdAt": "2025-09-28T17:09:46.205000-05:00",
+                    "message": "(service pqrs-service) was unable to place a task. Reason: ResourceInitializationError: failed to validate logger args: create stream has been retried 1 times: failed to create Cloudwatch log stream: ResourceNotFoundException: The specified log group does not exist. : exit status 1."
+                },
+                {
+                    "id": "941598d4-a82b-4808-b191-28a565cfd27c",
+                    "createdAt": "2025-09-28T17:09:15.663000-05:00",
+                    "message": "(service pqrs-service) has started 1 tasks: (task 4f89ccec4e1640fe9cba3b8bef65b711)."
+                },
+                {
+                    "id": "91e3bdfd-e435-41b6-90f0-c450feca80b6",
+                    "createdAt": "2025-09-28T17:08:44.411000-05:00",
+                    "message": "(service pqrs-service) was unable to place a task. Reason: ResourceInitializationError: failed to validate logger args: create stream has been retried 1 times: failed to create Cloudwatch log stream: ResourceNotFoundException: The specified log group does not exist. : exit status 1."
+                },
+                {
+                    "id": "b5f419a8-09c0-4824-8c07-e592f973550a",
+                    "createdAt": "2025-09-28T17:08:13.651000-05:00",
+                    "message": "(service pqrs-service) has started 1 tasks: (task 0013886a3ac94c77a44ce232b266b699)."
+                }
+            ],
+            "createdAt": "2025-09-28T17:07:54.445000-05:00",
+            "placementConstraints": [],
+            "placementStrategy": [],
+            "networkConfiguration": {
+                "awsvpcConfiguration": {
+                    "subnets": [
+                        "subnet-0931519199771cb12"
+                    ],
+                    "securityGroups": [
+                        "sg-00ce3c99e3a164ea5"
+                    ],
+                    "assignPublicIp": "ENABLED"
+                }
+            },
+            "healthCheckGracePeriodSeconds": 0,
+            "schedulingStrategy": "REPLICA",
+            "deploymentController": {
+                "type": "ECS"
+            },
+            "createdBy": "arn:aws:iam::025066262373:user/terraform",
+            "enableECSManagedTags": false,
+            "propagateTags": "NONE",
+            "enableExecuteCommand": false
+        }
+    ],
+    "failures": []
+}

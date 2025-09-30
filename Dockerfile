@@ -8,6 +8,11 @@ WORKDIR /app
 # Copiar archivos de dependencias
 COPY composer.json composer.lock ./
 
+# Copiar código de la aplicación temporalmente para que
+# composer dump-autoload pueda generar el classmap incluyendo
+# las clases bajo el namespace App\\ (p. ej. App\\Console\\Kernel)
+COPY app ./app
+
 # Instalar dependencias de producción
 RUN composer install \
     --no-dev \
@@ -139,6 +144,11 @@ RUN chown -R www:www /var/www
 
 USER www
 
+# Copy and set entrypoint (development)
+COPY --chown=www:www docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["php-fpm"]
 
 # ===========================================
@@ -161,6 +171,7 @@ COPY --chown=www:www public ./public
 COPY --chown=www:www resources ./resources
 COPY --chown=www:www routes ./routes
 COPY --chown=www:www artisan ./
+COPY --chown=www:www server.php ./
 COPY --chown=www:www composer.json composer.lock ./
 COPY --chown=www:www .env.docker.prod ./.env
 
@@ -178,11 +189,21 @@ RUN mkdir -p \
     && chown -R www:www storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
+# Ensure the application directory is owned and writable by the non-privileged user
+RUN chown -R www:www /var/www || true
+RUN chmod -R g+rwX /var/www || true
+
 # Optimizar aplicación para producción
 RUN if [ -f artisan ]; then \
-        php artisan config:cache && \
-        php artisan route:cache && \
-        php artisan view:cache; \
+          echo "-- PHP version and loaded modules --" && php -v && php -m || true; \
+          echo "-- Basic runtime bootstrap diagnostic --" && php -r "require 'vendor/autoload.php';\$app=require 'bootstrap/app.php'; if (method_exists(\$app, 'environmentFilePath')) { echo 'ENV_FILE: '.\$app->environmentFilePath().PHP_EOL; } echo 'APP_ENV: '.\$app->environment().PHP_EOL;" || true; \
+          # Ensure APP_KEY exists for config caching; generate if missing (non-fatal)
+          php -r "if (!file_exists('.env') || !preg_match('/^APP_KEY=.+/m', file_get_contents('.env'))) { \$k='base64:'.base64_encode(random_bytes(32)); if (file_exists('.env')) { file_put_contents('.env', preg_replace('/^APP_KEY=.*$/m', '', trim(file_get_contents('.env'))).PHP_EOL.'APP_KEY=' . \$k . PHP_EOL); } else { file_put_contents('.env', 'APP_KEY=' . \$k . PHP_EOL); } }" || true; \
+          echo "-- APP_KEY presence (not exposing value) --" && php -r "require 'vendor/autoload.php'; \$app=require 'bootstrap/app.php'; \$kernel=\$app->make(Illuminate\\Contracts\\Console\\Kernel::class); \$kernel->bootstrap(); echo 'CONFIG APP_KEY set: ', (config('app.key') ? 'yes' : 'no'), PHP_EOL;" || true; \
+          echo "-- Running artisan cache commands (errors will not break the build) --"; \
+          php artisan config:cache || echo 'php artisan config:cache failed' ; \
+          php artisan route:cache || echo 'php artisan route:cache failed' ; \
+          php artisan view:cache || echo 'php artisan view:cache failed' ; \
     fi
 
 # Cambiar a usuario sin privilegios
@@ -194,4 +215,8 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 
 EXPOSE 8000
 
+COPY --chown=www:www docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]

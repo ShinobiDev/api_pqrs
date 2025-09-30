@@ -228,33 +228,27 @@ pipeline {
                 echo "Desplegando aplicación desde branch: ${env.GIT_BRANCH_NAME}"
                 
                 script {
-                    if (env.GIT_BRANCH_NAME == 'main' || env.GIT_BRANCH_NAME == 'master') {
-                        // Despliegue a producción
-                        echo 'Desplegando a PRODUCCIÓN...'
-                        sh '''
-                            echo "🚀 Despliegue a PRODUCCIÓN"
-                            echo "Commit: ${GIT_COMMIT_SHORT}"
-                            echo "Branch: ${GIT_BRANCH_NAME}"
-                            
-                            # Optimizar aplicación para producción si es Laravel
-                            if [ -f artisan ]; then
-                                composer install --no-dev --optimize-autoloader || echo "Error en composer install"
-                                php artisan config:cache || echo "No se pudo cachear config"
-                                php artisan route:cache || echo "No se pudo cachear rutas"
-                                php artisan view:cache || echo "No se pudo cachear vistas"
-                            fi
-                        '''
-                    } else if (env.GIT_BRANCH_NAME == 'develop') {
-                        // Despliegue a staging
-                        echo 'Desplegando a STAGING...'
-                        sh '''
-                            echo "🧪 Despliegue a STAGING"
-                            echo "Commit: ${GIT_COMMIT_SHORT}"
-                            echo "Branch: ${GIT_BRANCH_NAME}"
-                            
-                            # Aquí iría el script de despliegue a staging
-                            # Mantener debug activo en staging
-                        '''
+                    // Deploy flow using AWS CLI + PowerShell scripts
+                    withCredentials([string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'), string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY'), string(credentialsId: 'AWS_DEFAULT_REGION', variable: 'AWS_DEFAULT_REGION')]) {
+                        // Choose target based on branch
+                        def target = (env.GIT_BRANCH_NAME == 'develop') ? 'staging' : 'production'
+                        echo "Deploy target: ${target}"
+
+                        // Set env for aws cli
+                        sh "export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}"
+
+                        // Ensure ECR exists (returns ECR URI)
+                        def ecrUri = sh(script: "pwsh -NoProfile -NonInteractive -Command ./scripts/infra/create-ecr.ps1 -RepoName pqrs-api -Region ${AWS_DEFAULT_REGION}" , returnStdout: true).trim()
+                        echo "ECR URI: ${ecrUri}"
+
+                        // Build and push image using short commit as tag
+                        def image = sh(script: "pwsh -NoProfile -NonInteractive -Command ./scripts/infra/build-and-push.ps1 -EcrUri ${ecrUri} -Tag ${GIT_COMMIT_SHORT}" , returnStdout: true).trim()
+                        echo "Pushed image: ${image}"
+
+                        // Register task definition and update service
+                        def cluster = (env.GIT_BRANCH_NAME == 'develop') ? 'pqrs-cluster-staging' : 'pqrs-cluster'
+                        def service = (env.GIT_BRANCH_NAME == 'develop') ? 'pqrs-service-staging' : 'pqrs-service'
+                        sh "pwsh -NoProfile -NonInteractive -Command ./scripts/infra/register-task-and-deploy.ps1 -Cluster ${cluster} -Service ${service} -Image ${image} -Region ${AWS_DEFAULT_REGION}"
                     }
                 }
             }

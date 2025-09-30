@@ -16,3 +16,14 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+// Serve L5-Swagger generated JSON at /docs to satisfy Swagger UI requests
+use Illuminate\Http\Request;
+Route::get('/docs', function (Request $request) {
+    $docsPath = storage_path('api-docs/api-docs.json');
+    if (!file_exists($docsPath)) {
+        return response('Not Found', 404);
+    }
+    $content = file_get_contents($docsPath);
+    return response($content, 200, ['Content-Type' => 'application/json']);
+})->name('l5-swagger.default.docs');

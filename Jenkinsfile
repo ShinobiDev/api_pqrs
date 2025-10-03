@@ -236,6 +236,10 @@ pipeline {
                 
                 script {
                     // Deploy flow using AWS CLI + PowerShell scripts
+                    // Validar si las credenciales AWS están configuradas en Jenkins
+                    if (!credentials('AWS_ACCESS_KEY_ID') || !credentials('AWS_SECRET_ACCESS_KEY') || !credentials('AWS_DEFAULT_REGION')) {
+                        error "Credenciales AWS no configuradas en Jenkins. Saltando despliegue."
+                    }
                     withCredentials([string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'), string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY'), string(credentialsId: 'AWS_DEFAULT_REGION', variable: 'AWS_DEFAULT_REGION')]) {
                         // Choose target based on branch
                         def target = (env.GIT_BRANCH_NAME == 'develop') ? 'staging' : 'production'

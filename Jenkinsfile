@@ -151,9 +151,14 @@ pipeline {
                 stage('Security Check') {
                     steps {
                         echo 'Verificando vulnerabilidades de seguridad...'
+                        //Comando restrictivo que falla el build si hay vulnerabilidades
+                        //sh '''
+                        //    # Verificar vulnerabilidades conocidas
+                        //    composer audit || true
+                        //'''
                         sh '''
                             # Verificar vulnerabilidades conocidas
-                            composer audit || true
+                            composer audit || echo "Security warning ignored for now"
                         '''
                     }
                 }

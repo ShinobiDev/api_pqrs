@@ -1,0 +1,35 @@
+{
+    "executionRoleArn":  null,
+    "networkMode":  "awsvpc",
+    "cpu":  "512",
+    "requiresCompatibilities":  [
+                                    "FARGATE"
+                                ],
+    "containerDefinitions":  [
+                                 {
+                                     "name":  "pqrs-app",
+                                     "logConfiguration":  {
+                                                              "logDriver":  "awslogs",
+                                                              "options":  {
+                                                                              "awslogs-region":  "us-east-1",
+                                                                              "awslogs-stream-prefix":  "ecs",
+                                                                              "awslogs-group":  "/ecs/pqrs"
+                                                                          }
+                                                          },
+                                     "environment":  [
+
+                                                     ],
+                                     "essential":  true,
+                                     "image":  "025066262373.dkr.ecr.us-east-1.amazonaws.com/pqrs-api:fixdocs4",
+                                     "portMappings":  [
+                                                          {
+                                                              "protocol":  "tcp",
+                                                              "containerPort":  8000
+                                                          }
+                                                      ]
+                                 }
+                             ],
+    "family":  "pqrs-task",
+    "taskRoleArn":  null,
+    "memory":  "1024"
+}

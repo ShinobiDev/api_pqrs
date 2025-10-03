@@ -18,9 +18,18 @@ class PrometheusRegistryService
             // For now, use InMemory but implement a Redis-backed persistence layer
             $storage = new InMemory();
             self::$registry = new CollectorRegistry($storage);
-            
-            // Try to load persisted metrics from Redis
-            self::loadPersistedMetrics();
+            // Try to load persisted metrics from Redis only when explicitly enabled
+            try {
+                $useRedis = env('PROMETHEUS_USE_REDIS', false);
+            } catch (\Throwable $e) {
+                $useRedis = false;
+            }
+
+            if ($useRedis && self::redisAvailable()) {
+                self::loadPersistedMetrics();
+            } else if ($useRedis) {
+                error_log("PrometheusRegistry: PROMETHEUS_USE_REDIS=true but Redis not available, skipping loadPersistedMetrics");
+            }
             
             // Initialize basic metrics
             self::initializeMetrics();
@@ -29,8 +38,18 @@ class PrometheusRegistryService
         // Update dynamic system metrics each time the registry is accessed
         self::updateSystemMetrics();
         
-        // Persist metrics to Redis for next request
-        self::persistMetricsToRedis();
+        // Persist metrics to Redis only when explicitly enabled
+        try {
+            $useRedis = env('PROMETHEUS_USE_REDIS', false);
+        } catch (\Throwable $e) {
+            $useRedis = false;
+        }
+
+        if ($useRedis && self::redisAvailable()) {
+            self::persistMetricsToRedis();
+        } else if ($useRedis) {
+            error_log("PrometheusRegistry: PROMETHEUS_USE_REDIS=true but Redis not available, skipping persistMetricsToRedis");
+        }
         
         return self::$registry;
     }
@@ -81,6 +100,38 @@ class PrometheusRegistryService
             
         } catch (\Throwable $e) {
             error_log("PrometheusRegistry: Error persisting metrics: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Check if the configured Redis connection for metrics is reachable.
+     */
+    private static function redisAvailable(): bool
+    {
+        try {
+            // If Laravel Redis facade isn't available, consider Redis unavailable
+            if (!class_exists('\Illuminate\Support\Facades\Redis')) {
+                return false;
+            }
+
+            $connection = LaravelRedis::connection('metrics');
+
+            // Try a ping; some drivers support ping(), others may throw — catch all
+            try {
+                $result = $connection->ping();
+                // ping may return +PONG, PONG or true depending on client
+                return $result === true || stripos((string)$result, 'pong') !== false;
+            } catch (\Throwable $e) {
+                // Some drivers may not have ping; try a harmless get of a non-existent key
+                try {
+                    $connection->get('__prometheus_ping_probe__');
+                    return true;
+                } catch (\Throwable $e) {
+                    return false;
+                }
+            }
+        } catch (\Throwable $e) {
+            return false;
         }
     }
 

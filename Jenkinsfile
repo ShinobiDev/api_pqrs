@@ -32,21 +32,17 @@ pipeline {
         stage('🔍 Checkout') {
             steps {
                 echo 'Descargando código desde GitHub...'
-                checkout scm
-                
+
                 script {
-                    // Obtener información del commit
+                    // Jenkins ya hizo el checkout automático
+                    // BRANCH_NAME ya está definido por Jenkins
                     env.GIT_COMMIT_SHORT = sh(
                         script: 'git rev-parse --short HEAD',
                         returnStdout: true
                     ).trim()
-                    env.GIT_BRANCH_NAME = sh(
-                        script: 'git rev-parse --abbrev-ref HEAD',
-                        returnStdout: true
-                    ).trim()
                 }
-                
-                echo "Branch: ${env.GIT_BRANCH_NAME}"
+
+                echo "Branch: ${env.BRANCH_NAME ?: 'unknown'}"
                 echo "Commit: ${env.GIT_COMMIT_SHORT}"
             }
         }

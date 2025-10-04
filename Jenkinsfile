@@ -34,8 +34,14 @@ pipeline {
                 echo 'Descargando código desde GitHub...'
 
                 script {
-                    // Jenkins ya hizo el checkout automático
-                    // BRANCH_NAME ya está definido por Jenkins
+                    if(!env.BRANCH_NAME)
+                    {
+                        error "No se detectó BRANCH_NAME. Asegúrate de que el job esté configurado correctamente."
+                        env.BRANCH_NAME = sh(
+                            script: 'git branch --show-current',
+                            returnStdout: true
+                        ).trim()
+                    }
                     env.GIT_COMMIT_SHORT = sh(
                         script: 'git rev-parse --short HEAD',
                         returnStdout: true

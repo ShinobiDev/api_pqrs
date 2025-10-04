@@ -32,7 +32,7 @@ pipeline {
         stage('🔍 Checkout') {
             steps {
                 echo 'Descargando código desde GitHub...'
-
+                checkout scm // Usar configuración SCM del job 
                 script {
                     // Detectar branch actual de manera más robusta
                     def currentBranch = env.BRANCH_NAME ?: sh(

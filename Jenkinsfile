@@ -34,13 +34,23 @@ pipeline {
                 echo 'Descargando código desde GitHub...'
 
                 script {
-                    if(!env.BRANCH_NAME)
-                    {
-                        error "No se detectó BRANCH_NAME. Asegúrate de que el job esté configurado correctamente."
-                        env.BRANCH_NAME = sh(
-                            script: 'git branch --show-current',
-                            returnStdout: true
-                        ).trim()
+                    // Detectar branch actual de manera más robusta
+                    def currentBranch = env.BRANCH_NAME ?: sh(
+                        script: 'git branch --show-current || git rev-parse --abbrev-ref HEAD',
+                        returnStdout: true
+                    ).trim()
+                    
+                    echo "🌿 Branch detectada: ${currentBranch}"
+                    
+                    // Asignar branch si no está definida en el entorno
+                    if (!env.BRANCH_NAME) {
+                        env.BRANCH_NAME = currentBranch
+                        echo "⚠️  BRANCH_NAME no estaba definida, se asignó desde Git: ${currentBranch}"
+                    }
+                    
+                    // Validar que tenemos un branch válido
+                    if (!env.BRANCH_NAME || env.BRANCH_NAME.trim().isEmpty()) {
+                        error "❌ No se pudo determinar el branch actual. Verifica la configuración del repositorio."
                     }
                     env.GIT_COMMIT_SHORT = sh(
                         script: 'git rev-parse --short HEAD',

@@ -32,26 +32,34 @@ pipeline {
         stage('🔍 Checkout') {
             steps {
                 echo 'Descargando código desde GitHub...'
-                checkout scm // Usar configuración SCM del job 
+                checkout scm // Paso esencial. Jenkins lo ejecuta dos veces, pero es necesario aquí.
+                
                 script {
-                    // Detectar branch actual de manera más robusta
-                    def currentBranch = env.BRANCH_NAME ?: sh(
-                        script: 'git branch --show-current || git rev-parse --abbrev-ref HEAD',
-                        returnStdout: true
-                    ).trim()
+                    // ----------------------------------------------------------------
+                    // 🚨 CAMBIO CLAVE AQUÍ: Usamos las variables de Jenkins.
+                    // ----------------------------------------------------------------
+                    
+                    // La variable GIT_BRANCH la define el plugin de Git. 
+                    // Si viene como 'origin/main', la simplificamos a 'main'.
+                    def gitBranchName = env.GIT_BRANCH ?: env.BRANCH_NAME ?: 'unknown'
+
+                    // Limpiar la referencia remota (ej: 'origin/main' -> 'main')
+                    if (gitBranchName.startsWith('origin/')) {
+                        gitBranchName = gitBranchName.substring('origin/'.length())
+                    }
+                    
+                    def currentBranch = gitBranchName.trim()
                     
                     echo "🌿 Branch detectada: ${currentBranch}"
-                    
-                    // Asignar branch si no está definida en el entorno
-                    if (!env.BRANCH_NAME) {
-                        env.BRANCH_NAME = currentBranch
-                        echo "⚠️  BRANCH_NAME no estaba definida, se asignó desde Git: ${currentBranch}"
+
+                    // Asignamos la variable principal para uso futuro
+                    if (currentBranch.isEmpty() || currentBranch == 'HEAD') {
+                        error "❌ No se pudo determinar el branch actual. Se obtuvo: ${currentBranch}. Verifica la configuración del repositorio."
                     }
                     
-                    // Validar que tenemos un branch válido
-                    if (!env.BRANCH_NAME || env.BRANCH_NAME.trim().isEmpty()) {
-                        error "❌ No se pudo determinar el branch actual. Verifica la configuración del repositorio."
-                    }
+                    env.BRANCH_NAME = currentBranch
+                    
+                    // Solo usamos 'git rev-parse' para el commit corto, que sí funciona bien.
                     env.GIT_COMMIT_SHORT = sh(
                         script: 'git rev-parse --short HEAD',
                         returnStdout: true
@@ -167,8 +175,8 @@ pipeline {
                         echo 'Verificando vulnerabilidades de seguridad...'
                         //Comando restrictivo que falla el build si hay vulnerabilidades
                         //sh '''
-                        //    # Verificar vulnerabilidades conocidas
-                        //    composer audit || true
+                        //      # Verificar vulnerabilidades conocidas
+                        //      composer audit || true
                         //'''
                         sh '''
                             # Verificar vulnerabilidades conocidas
@@ -202,9 +210,9 @@ pipeline {
                                                 [ -n "$APPKEY_LINE" ] && echo "APP_KEY (testing): presente" || echo "APP_KEY (testing): faltante"
 
                                                 # Diagnóstico: archivo de entorno y APP_ENV activos en runtime
-                                                php -r "require 'vendor/autoload.php'; $app=require 'bootstrap/app.php'; if (method_exists($app,'environmentFilePath')) { echo 'ENV_FILE: '.$app->environmentFilePath(), PHP_EOL; } else { echo 'ENV_FILE: unknown', PHP_EOL; } echo 'APP_ENV: '.$app->environment(), PHP_EOL;" || true
+                                                php -r "require 'vendor/autoload.php'; \$app=require 'bootstrap/app.php'; if (method_exists(\$app,'environmentFilePath')) { echo 'ENV_FILE: '.\$app->environmentFilePath(), PHP_EOL; } else { echo 'ENV_FILE: unknown', PHP_EOL; } echo 'APP_ENV: '.\$app->environment(), PHP_EOL;" || true
                                                 # Diagnóstico: confirmar que config('app.key') esté definido (sin exponer valor)
-                                                php -r "require 'vendor/autoload.php'; $app=require 'bootstrap/app.php'; $kernel=$app->make(Illuminate\\Contracts\\Console\\Kernel::class); $kernel->bootstrap(); echo 'CONFIG APP_KEY set: ', (config('app.key') ? 'yes' : 'no'), PHP_EOL;" || true
+                                                php -r "require 'vendor/autoload.php'; \$app=require 'bootstrap/app.php'; \$kernel=\$app->make(Illuminate\\Contracts\\Console\\Kernel::class); \$kernel->bootstrap(); echo 'CONFIG APP_KEY set: ', (config('app.key') ? 'yes' : 'no'), PHP_EOL;" || true
 
                         # Asegurar BD limpia para evitar duplicados en seeders
                         rm -f database/database.sqlite
@@ -244,7 +252,10 @@ pipeline {
                 }
             }
             steps {
-                echo "Desplegando aplicación desde branch: ${env.GIT_BRANCH_NAME}"
+                // ----------------------------------------------------------------
+                // 🚨 CAMBIO AQUÍ: Usamos env.BRANCH_NAME que acabamos de definir
+                // ----------------------------------------------------------------
+                echo "Desplegando aplicación desde branch: ${env.BRANCH_NAME}"
                 
                 script {
                     // Deploy flow using AWS CLI + PowerShell scripts
@@ -254,7 +265,7 @@ pipeline {
                     }
                     withCredentials([string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'), string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY'), string(credentialsId: 'AWS_DEFAULT_REGION', variable: 'AWS_DEFAULT_REGION')]) {
                         // Choose target based on branch
-                        def target = (env.GIT_BRANCH_NAME == 'develop') ? 'staging' : 'production'
+                        def target = (env.BRANCH_NAME == 'develop') ? 'staging' : 'production'
                         echo "Deploy target: ${target}"
 
                         // Set env for aws cli
@@ -269,8 +280,8 @@ pipeline {
                         echo "Pushed image: ${image}"
 
                         // Register task definition and update service
-                        def cluster = (env.GIT_BRANCH_NAME == 'develop') ? 'pqrs-cluster-staging' : 'pqrs-cluster'
-                        def service = (env.GIT_BRANCH_NAME == 'develop') ? 'pqrs-service-staging' : 'pqrs-service'
+                        def cluster = (env.BRANCH_NAME == 'develop') ? 'pqrs-cluster-staging' : 'pqrs-cluster'
+                        def service = (env.BRANCH_NAME == 'develop') ? 'pqrs-service-staging' : 'pqrs-service'
                         sh "pwsh -NoProfile -NonInteractive -Command ./scripts/infra/register-task-and-deploy.ps1 -Cluster ${cluster} -Service ${service} -Image ${image} -Region ${AWS_DEFAULT_REGION}"
                     }
                 }
@@ -286,7 +297,7 @@ pipeline {
                         *Pipeline ${status}* 🎯
                         
                         *Proyecto:* API PQRS
-                        *Branch:* ${env.GIT_BRANCH_NAME}
+                        *Branch:* ${env.BRANCH_NAME}
                         *Commit:* ${env.GIT_COMMIT_SHORT}
                         *Build:* ${env.BUILD_NUMBER}
                         *Duración:* ${currentBuild.durationString}
@@ -328,7 +339,7 @@ pipeline {
                     🚨 *PIPELINE FAILED* 🚨
                     
                     *Proyecto:* API PQRS
-                    *Branch:* ${env.GIT_BRANCH_NAME}
+                    *Branch:* ${env.BRANCH_NAME}
                     *Build:* ${env.BUILD_NUMBER}
                     *Error:* ${currentBuild.description ?: 'Ver logs para detalles'}
                     

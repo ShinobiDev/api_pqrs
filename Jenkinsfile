@@ -272,7 +272,11 @@ pipeline {
                         sh "export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}"
 
                         // Ensure ECR exists (returns ECR URI)
-                        def ecrUri = sh(script: "pwsh -NoProfile -NonInteractive -Command ./scripts/infra/create-ecr.ps1 -RepoName pqrs-api -Region ${AWS_DEFAULT_REGION}" , returnStdout: true).trim()
+                        //def ecrUri = sh(script: "pwsh -NoProfile -NonInteractive -Command ./scripts/infra/create-ecr.ps1 -RepoName pqrs-api -Region ${AWS_DEFAULT_REGION}" , returnStdout: true).trim()
+                        def ecrUri = pwsh(
+                            script: '/var/jenkins_home/scripts/infra/create-ecr.ps1 -RepoName "pqrs-api" -Region "us-east-1"',
+                            returnStdout: true
+                        ).trim()
                         echo "ECR URI: ${ecrUri}"
 
                         // Build and push image using short commit as tag

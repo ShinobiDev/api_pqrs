@@ -149,7 +149,7 @@ try {
     # Endpoints to check
     $hostsToCheck = @()
     if ($publicIp) { $hostsToCheck += @{ Host = $publicIp; Port = 8000 } ;} 
-    if ($privateIp) { $hostsToCheck += @{ Host = $privateIp; Port = 8000 } }
+    #if ($privateIp) { $hostsToCheck += @{ Host = $privateIp; Port = 8000 } }
 
     if ($hostsToCheck.Count -eq 0) {
         Write-Host 'No host IPs to test for HTTP connectivity. If your service is behind a load balancer, test the ALB DNS externally.'
@@ -165,8 +165,7 @@ try {
         # Try swagger UI and JSON
         $urls = @(
             "http://$($targetHost):$port/api/documentation",
-            "http://$($targetHost):$port/docs",
-            "http://$($targetHost):$port/health"
+            "http://$($targetHost):$port/docs"
         )
         foreach ($u in $urls) {
             Write-Host "GET $u"

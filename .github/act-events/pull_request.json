@@ -1,0 +1,21 @@
+{
+  "pull_request": {
+    "number": 1,
+    "head": {
+      "ref": "feature/test-branch",
+      "sha": "1234567890123456789012345678901234567890"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "title": "Test PR for local GitHub Actions",
+    "body": "Testing PR validation workflow locally"
+  },
+  "repository": {
+    "name": "api_pqrs",
+    "full_name": "chaquen/api_pqrs",
+    "owner": {
+      "name": "chaquen"
+    }
+  }
+}

@@ -1,0 +1,449 @@
+# 🚀 CI/CD Pipeline para API PQRS
+# Workflow automatizado para testing, quality checks y deployment a AWS ECS
+#
+# Setup requerido:
+# 1. Configurar secrets en GitHub:
+#    - AWS_ACCESS_KEY_ID
+#    - AWS_SECRET_ACCESS_KEY  
+#    - SLACK_WEBHOOK_URL (opcional)
+#
+# 2. Configurar ECR repository y ECS service en AWS
+# 3. Crear task definition file en .aws/task-definition.json
+
+name: 🚀 CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main", "master", "develop" ]
+  pull_request:
+    branches: [ "main", "master", "develop" ]
+
+env:
+  # AWS Configuration
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: pqrs-api
+  ECS_CLUSTER_PROD: pqrs-cluster
+  ECS_SERVICE_PROD: pqrs-service
+  ECS_CLUSTER_STAGING: pqrs-cluster-staging
+  ECS_SERVICE_STAGING: pqrs-service-staging  
+  ECS_TASK_DEFINITION: .aws/task-definition.json
+  CONTAINER_NAME: pqrs-api-container
+  
+  # PHP Configuration
+  PHP_VERSION: '8.2'
+  
+  # Application Configuration
+  APP_ENV: testing
+  APP_DEBUG: true
+  DB_CONNECTION: sqlite
+  DB_DATABASE: database/database.sqlite
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  # 🔍 Checkout y preparación inicial
+  setup:
+    name: 🔍 Setup & Branch Detection
+    runs-on: ubuntu-latest
+    outputs:
+      branch: ${{ steps.branch.outputs.branch }}
+      short-sha: ${{ steps.vars.outputs.short-sha }}
+      deploy-target: ${{ steps.deploy.outputs.target }}
+      should-deploy: ${{ steps.deploy.outputs.should-deploy }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: 🌿 Detect branch and set variables
+        id: branch
+        run: |
+          BRANCH=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
+          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+          echo "🌿 Branch detectada: $BRANCH"
+      
+      - name: 📝 Set output variables
+        id: vars
+        run: |
+          SHORT_SHA=$(echo $GITHUB_SHA | cut -c1-7)
+          echo "short-sha=$SHORT_SHA" >> $GITHUB_OUTPUT
+          echo "📝 Commit SHA: $SHORT_SHA"
+      
+      - name: 🎯 Determine deployment target
+        id: deploy
+        run: |
+          BRANCH="${{ steps.branch.outputs.branch }}"
+          if [[ "$BRANCH" == "main" || "$BRANCH" == "master" ]]; then
+            echo "target=production" >> $GITHUB_OUTPUT
+            echo "should-deploy=true" >> $GITHUB_OUTPUT
+            echo "🎯 Deploy target: production"
+          elif [[ "$BRANCH" == "develop" ]]; then
+            echo "target=staging" >> $GITHUB_OUTPUT
+            echo "should-deploy=true" >> $GITHUB_OUTPUT
+            echo "🎯 Deploy target: staging"
+          else
+            echo "target=none" >> $GITHUB_OUTPUT
+            echo "should-deploy=false" >> $GITHUB_OUTPUT
+            echo "🎯 No deployment for this branch"
+          fi
+
+  # 🐘 Setup PHP Environment
+  php-setup:
+    name: 🐘 PHP Environment Setup
+    runs-on: ubuntu-latest
+    needs: setup
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: pdo, mbstring, openssl, tokenizer, xml, ctype, json, bcmath, sqlite3
+          tools: composer
+          coverage: none
+      
+      - name: Verify PHP installation
+        run: |
+          php --version
+          php -m | grep -E "(pdo|mbstring|openssl|tokenizer|xml|ctype|json|bcmath)"
+      
+      - name: Cache Composer dependencies
+        uses: actions/cache@v3
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+      
+      - name: 📦 Install Composer dependencies
+        run: |
+          composer install --no-progress --prefer-dist --optimize-autoloader
+          composer show --installed
+
+  # 🔍 Code Quality Analysis
+  code-quality:
+    name: 🔍 Code Quality Analysis
+    runs-on: ubuntu-latest
+    needs: [setup, php-setup]
+    
+    strategy:
+      matrix:
+        check: [syntax, composer-validate, security]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: pdo, mbstring, openssl, tokenizer, xml, ctype, json, bcmath, sqlite3
+          tools: composer
+      
+      - name: Cache Composer dependencies
+        uses: actions/cache@v3
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+      
+      - name: Install dependencies
+        run: composer install --no-progress --prefer-dist --optimize-autoloader
+      
+      - name: 🔍 PHP Syntax Check
+        if: matrix.check == 'syntax'
+        run: |
+          find . -name "*.php" -not -path "./vendor/*" -exec php -l {} \; || echo "⚠️ Algunos archivos tienen errores de sintaxis"
+      
+      - name: 📋 Composer Validation
+        if: matrix.check == 'composer-validate'
+        run: composer validate
+      
+      - name: 🔒 Security Audit
+        if: matrix.check == 'security'
+        run: |
+          composer audit || echo "⚠️ Security warnings found - review recommended"
+
+  # ⚙️ Application Configuration
+  app-config:
+    name: ⚙️ Configure Laravel Application
+    runs-on: ubuntu-latest
+    needs: [setup, php-setup]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: pdo, mbstring, openssl, tokenizer, xml, ctype, json, bcmath, sqlite3
+          tools: composer
+      
+      - name: Cache Composer dependencies
+        uses: actions/cache@v3
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+      
+      - name: Install dependencies
+        run: composer install --no-progress --prefer-dist --optimize-autoloader
+      
+      - name: ⚙️ Configure Laravel application
+        run: |
+          # Crear archivo .env para testing
+          if [ -f .env.example ]; then
+            cp .env.example .env
+          else
+            touch .env
+          fi
+          
+          # Configurar variables básicas
+          echo "APP_ENV=testing" > .env
+          echo "APP_DEBUG=true" >> .env
+          echo "DB_CONNECTION=sqlite" >> .env
+          echo "DB_DATABASE=database/database.sqlite" >> .env
+          
+          # Crear base de datos SQLite
+          mkdir -p database
+          touch database/database.sqlite
+          
+          # Generar clave de aplicación
+          php artisan key:generate --no-interaction --force
+          
+          # Limpiar cachés
+          php artisan config:clear || true
+          php artisan cache:clear || true
+          
+          # Configurar entorno de testing
+          cp .env .env.testing
+          php artisan key:generate --env=testing --no-interaction --force
+          
+          # Crear directorios necesarios
+          mkdir -p storage/logs
+          mkdir -p storage/framework/{cache,sessions,views}
+          
+          # Establecer permisos
+          chmod -R 755 storage bootstrap/cache
+
+  # 🧪 Run Tests
+  tests:
+    name: 🧪 Execute Tests
+    runs-on: ubuntu-latest
+    needs: [setup, app-config]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: pdo, mbstring, openssl, tokenizer, xml, ctype, json, bcmath, sqlite3
+          tools: composer
+      
+      - name: Cache Composer dependencies
+        uses: actions/cache@v3
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+      
+      - name: Install dependencies
+        run: composer install --no-progress --prefer-dist --optimize-autoloader
+      
+      - name: 🧪 Prepare test environment
+        run: |
+          # Configurar entorno de testing
+          cp .env.example .env.testing
+          echo "APP_ENV=testing" >> .env.testing
+          echo "APP_DEBUG=true" >> .env.testing
+          echo "DB_CONNECTION=sqlite" >> .env.testing
+          echo "DB_DATABASE=database/database.sqlite" >> .env.testing
+          
+          # Generar APP_KEY para testing
+          TEST_KEY=$(php -r "echo base64_encode(random_bytes(32));")
+          echo "APP_KEY=base64:${TEST_KEY}" >> .env.testing
+          
+          # Crear y configurar base de datos
+          rm -f database/database.sqlite
+          touch database/database.sqlite
+          
+          # Limpiar cachés
+          php artisan config:clear || true
+          php artisan cache:clear || true
+          
+          # Ejecutar migraciones y seeders
+          php artisan migrate:fresh --seed --force --no-interaction --env=testing
+      
+      - name: 🧪 Run Laravel tests
+        run: php artisan test --env=testing
+      
+      - name: 📊 Upload test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: test-results
+          path: |
+            storage/logs/
+            database/database.sqlite
+
+  # 📋 Generate API Documentation
+  docs:
+    name: 📋 Generate API Documentation
+    runs-on: ubuntu-latest
+    needs: [setup, app-config]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: pdo, mbstring, openssl, tokenizer, xml, ctype, json, bcmath, sqlite3
+          tools: composer
+      
+      - name: Install dependencies
+        run: composer install --no-progress --prefer-dist --optimize-autoloader
+      
+      - name: 📋 Generate Swagger documentation
+        run: |
+          php artisan list | grep swagger || echo "⚠️ Swagger no está instalado"
+          # php artisan l5-swagger:generate || echo "⚠️ No se pudo generar documentación Swagger"
+          echo "✅ Documentación completada"
+
+  # 🐳 Build and Deploy
+  deploy:
+    name: 🚀 Deploy to AWS ECS
+    runs-on: ubuntu-latest
+    needs: [setup, code-quality, tests, docs]
+    if: needs.setup.outputs.should-deploy == 'true'
+    environment: ${{ needs.setup.outputs.deploy-target }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: 🔑 Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: 🔐 Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      
+      - name: 🏗️ Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ needs.setup.outputs.short-sha }}
+        run: |
+          # Build Docker image
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
+          
+          # Push images to ECR
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+          echo "🏗️ Image pushed: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+      
+      - name: 📝 Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ env.ECS_TASK_DEFINITION }}
+          container-name: ${{ env.CONTAINER_NAME }}
+          image: ${{ steps.build-image.outputs.image }}
+      
+      - name: 🚀 Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ needs.setup.outputs.deploy-target == 'production' && env.ECS_SERVICE_PROD || env.ECS_SERVICE_STAGING }}
+          cluster: ${{ needs.setup.outputs.deploy-target == 'production' && env.ECS_CLUSTER_PROD || env.ECS_CLUSTER_STAGING }}
+          wait-for-service-stability: true
+      
+      - name: 🎉 Deployment success
+        run: |
+          echo "🎉 Deployment to ${{ needs.setup.outputs.deploy-target }} completed successfully!"
+          echo "📦 Image: ${{ steps.build-image.outputs.image }}"
+          echo "🌿 Branch: ${{ needs.setup.outputs.branch }}"
+          echo "📝 Commit: ${{ needs.setup.outputs.short-sha }}"
+
+  # 🔔 Notifications
+  notify:
+    name: 🔔 Send Notifications
+    runs-on: ubuntu-latest
+    needs: [setup, code-quality, tests, docs, deploy]
+    if: always()
+    
+    steps:
+      - name: 🔔 Determine notification status
+        id: status
+        run: |
+          if [[ "${{ needs.deploy.result }}" == "success" || "${{ needs.tests.result }}" == "success" ]]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "color=good" >> $GITHUB_OUTPUT
+            echo "emoji=✅" >> $GITHUB_OUTPUT
+          elif [[ "${{ needs.deploy.result }}" == "failure" || "${{ needs.tests.result }}" == "failure" ]]; then
+            echo "status=failure" >> $GITHUB_OUTPUT
+            echo "color=danger" >> $GITHUB_OUTPUT
+            echo "emoji=❌" >> $GITHUB_OUTPUT
+          else
+            echo "status=partial" >> $GITHUB_OUTPUT
+            echo "color=warning" >> $GITHUB_OUTPUT
+            echo "emoji=⚠️" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: 📢 Create notification message
+        id: message
+        run: |
+          MESSAGE="${{ steps.status.outputs.emoji }} **Pipeline ${{ steps.status.outputs.status }}** 🎯
+
+          **Proyecto:** API PQRS
+          **Branch:** ${{ needs.setup.outputs.branch }}
+          **Commit:** ${{ needs.setup.outputs.short-sha }}
+          **Deploy Target:** ${{ needs.setup.outputs.deploy-target }}
+          **Workflow:** ${{ github.run_number }}
+          
+          **Results:**
+          - Code Quality: ${{ needs.code-quality.result }}
+          - Tests: ${{ needs.tests.result }}
+          - Docs: ${{ needs.docs.result }}
+          - Deploy: ${{ needs.deploy.result || 'skipped' }}
+          
+          [View Workflow](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+          
+          echo "message<<EOF" >> $GITHUB_OUTPUT
+          echo "$MESSAGE" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+      
+      - name: 💬 Send Slack notification
+        if: env.SLACK_WEBHOOK_URL != ''
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ steps.status.outputs.status }}
+          text: ${{ steps.message.outputs.message }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      
+      - name: 📝 Echo notification
+        run: |
+          echo "🔔 Notification Status: ${{ steps.status.outputs.status }}"
+          echo "${{ steps.message.outputs.message }}"

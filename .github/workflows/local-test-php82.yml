@@ -1,0 +1,43 @@
+# Local Test Workflow for PHP 8.2
+# This workflow is optimized for local testing with act tool
+# Usage: act --job test --workflows .github/workflows/local-test-php82.yml --env-file .env.act
+
+name: Local Test PHP 8.2
+
+on:
+  workflow_dispatch:
+  
+jobs:
+  test:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Test Basic Functionality
+        run: |
+          echo "=== Local Test Started ==="
+          echo "Working directory: $(pwd)"
+          echo "Files in directory:"
+          ls -la
+          echo "=== Basic test completed ==="
+      
+      - name: Check Existing Tools
+        run: |
+          echo "=== Checking available tools ==="
+          which php && php -v || echo "PHP not available"
+          which composer && composer --version || echo "Composer not available"
+          which curl && curl --version || echo "curl not available"
+          echo "=== Environment check completed ==="
+      
+      - name: Simple Laravel Check
+        run: |
+          echo "=== Laravel Environment Check ==="
+          if [ -f "artisan" ]; then
+            echo "Laravel project detected"
+            echo "Artisan file found"
+            if [ -f "composer.json" ]; then
+              echo "Composer.json found"
+              cat composer.json | head -10
+            fi
+          else
+            echo "No Laravel project found"
+          fi
+          echo "=== Laravel check completed ==="

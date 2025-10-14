@@ -1,0 +1,110 @@
+---
+name: Deployment Request
+about: Request deployment to staging or production
+title: '[DEPLOY] '
+labels: 'deployment'
+assignees: ''
+---
+
+## 🚀 Deployment Request
+
+**Environment:**
+- [ ] Staging
+- [ ] Production
+
+**Deployment Type:**
+- [ ] Regular deployment (automated via CI/CD)
+- [ ] Hotfix deployment
+- [ ] Rollback to previous version
+- [ ] Manual deployment required
+
+## 📋 Deployment Details
+
+**Branch/Tag to deploy:**
+<!-- e.g., main, develop, v1.2.0 -->
+
+**Target version:**
+<!-- Semantic version if applicable -->
+
+**Commit SHA:**
+<!-- Full commit hash -->
+
+## 🎯 Changes Included
+
+**Features:**
+<!-- List new features included -->
+
+**Bug fixes:**
+<!-- List bugs fixed -->
+
+**Database migrations:**
+- [ ] No database changes
+- [ ] Safe migrations (additive only)
+- [ ] Breaking changes (requires downtime)
+
+**Configuration changes:**
+- [ ] No config changes  
+- [ ] Environment variables updated
+- [ ] AWS resources modified
+
+## ✅ Pre-deployment Checklist
+
+### Code Quality
+- [ ] All tests pass locally
+- [ ] Code review completed and approved
+- [ ] No merge conflicts
+- [ ] Documentation updated
+
+### Infrastructure
+- [ ] AWS resources are ready
+- [ ] Database migrations tested
+- [ ] Environment secrets are current
+- [ ] Monitoring/alerting configured
+
+### Communication
+- [ ] Team notified of deployment
+- [ ] Stakeholders informed (if needed)
+- [ ] Rollback plan prepared
+- [ ] Post-deployment verification plan ready
+
+## 🔄 Rollback Plan
+
+**If deployment fails:**
+<!-- Describe rollback procedure -->
+
+**Previous stable version:**
+<!-- Reference to last known good deployment -->
+
+**Database rollback:**
+- [ ] No database rollback needed
+- [ ] Automated rollback available  
+- [ ] Manual rollback required
+
+## 📊 Post-deployment Verification
+
+**Health checks:**
+- [ ] Application starts successfully
+- [ ] Database connectivity confirmed
+- [ ] API endpoints responding
+- [ ] Key features functional
+
+**Monitoring:**
+- [ ] Error rates normal
+- [ ] Performance metrics acceptable
+- [ ] Resource usage within limits
+
+**Stakeholder verification:**
+- [ ] QA team notified
+- [ ] Product owner approval
+- [ ] Customer-facing features verified
+
+## 📝 Additional Notes
+
+**Special considerations:**
+<!-- Any special deployment requirements -->
+
+**Expected downtime:**
+<!-- Estimated downtime, if any -->
+
+**Related issues/PRs:**
+<!-- Links to related GitHub items -->

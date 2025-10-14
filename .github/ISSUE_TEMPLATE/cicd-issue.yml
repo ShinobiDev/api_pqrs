@@ -1,0 +1,83 @@
+---
+name: CI/CD Issue
+about: Report problems with GitHub Actions workflows or deployment
+title: '[CI/CD] '
+labels: 'ci/cd, bug'
+assignees: ''
+---
+
+## 🔧 CI/CD Issue Description
+
+**Workflow affected:**
+- [ ] ci-cd.yml (Main pipeline)
+- [ ] pr-validation.yml (PR validation)  
+- [ ] local-test-php82.yml (Local testing)
+- [ ] Other: ___________
+
+**Environment:**
+- [ ] Local development (act)
+- [ ] GitHub Actions (cloud)
+- [ ] Staging deployment
+- [ ] Production deployment
+
+## 🐛 Problem Description
+
+**What happened:**
+<!-- Clear description of the issue -->
+
+**Expected behavior:**
+<!-- What should have happened -->
+
+**Error messages/logs:**
+```
+<!-- Paste relevant error messages or logs here -->
+```
+
+## 🔍 Debugging Information
+
+**Run details:**
+- Workflow run ID: <!-- Get from GitHub Actions tab -->
+- Commit SHA: <!-- Git commit hash -->
+- Branch: <!-- Branch name -->
+- Triggered by: <!-- push, PR, manual, etc. -->
+
+**Failed job/step:**
+<!-- Which specific job or step failed -->
+
+**Relevant configuration:**
+```yaml
+<!-- Paste relevant workflow YAML if applicable -->
+```
+
+## 🔧 Environment Details
+
+**PHP Version:** <!-- 8.2 expected -->
+**Laravel Version:** <!-- Check composer.json -->
+**Database:** <!-- SQLite for CI, MySQL for deploy -->
+**Container:** <!-- Docker image used -->
+
+**Local testing (if applicable):**
+```bash
+# Commands used
+act --version
+# Specific act command that failed
+```
+
+## 📝 Additional Context
+
+**Recent changes:**
+<!-- Any recent code or configuration changes -->
+
+**Workaround found:**
+<!-- If you found a temporary solution -->
+
+**Related issues:**
+<!-- Link to related GitHub issues -->
+
+## ✅ Checklist
+
+- [ ] I've checked the workflow logs in GitHub Actions
+- [ ] I've verified the branch protection rules
+- [ ] I've confirmed required secrets are set
+- [ ] I've tested locally with act (if applicable)
+- [ ] I've checked AWS resources are accessible (for deployment issues)

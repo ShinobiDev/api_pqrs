@@ -1,5 +1,5 @@
 {
-    "executionRoleArn":  null,
+    "executionRoleArn":  "arn:aws:iam::025066262373:role/ecsTaskExecutionRole",
     "networkMode":  "awsvpc",
     "cpu":  "512",
     "requiresCompatibilities":  [
@@ -20,7 +20,7 @@
 
                                                      ],
                                      "essential":  true,
-                                     "image":  "025066262373.dkr.ecr.us-east-1.amazonaws.com/pqrs-api:fixdocs4",
+                                     "image":  "025066262373.dkr.ecr.us-east-1.amazonaws.com/pqrs-api:dev-123",
                                      "portMappings":  [
                                                           {
                                                               "protocol":  "tcp",

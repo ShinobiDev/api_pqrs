@@ -1,0 +1,25 @@
+{
+  "push": {
+    "ref": "refs/heads/main", 
+    "before": "0000000000000000000000000000000000000000",
+    "after": "1234567890123456789012345678901234567890",
+    "repository": {
+      "name": "api_pqrs",
+      "full_name": "chaquen/api_pqrs",
+      "owner": {
+        "name": "chaquen"
+      }
+    },
+    "pusher": {
+      "name": "test-user"
+    },
+    "head_commit": {
+      "id": "1234567890123456789012345678901234567890",
+      "message": "Test commit for local GitHub Actions",
+      "author": {
+        "name": "Test User",
+        "email": "test@example.com"
+      }
+    }
+  }
+}

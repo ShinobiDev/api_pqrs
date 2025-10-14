@@ -1,0 +1,20 @@
+# Act configuration file
+# This file configures how act runs GitHub Actions locally
+
+# Use medium-sized runner by default (similar to ubuntu-latest)
+-P ubuntu-latest=catthehacker/ubuntu:act-latest
+
+# Event files for different triggers
+--eventpath .github/act-events/push.json
+
+# Load environment variables from .env.act
+--env-file .env.act
+
+# Bind workspace to current directory
+--bind
+
+# Use Docker network
+--network host
+
+# Verbose output
+--verbose
